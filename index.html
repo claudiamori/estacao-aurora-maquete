@@ -1,1012 +1,549 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
-<title>Maquete da Estação Aurora · Missão Colheita</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estação Aurora · Maquete</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-/* Layout: palco 3D em tela cheia à esquerda, prancheta de leitura à direita (embaixo no celular). Tema único escuro: é uma noite polar. */
 :root{
-  --night:#0a1020;
-  --panel:#101a31;
-  --panel-2:#16223f;
-  --line:#2a3a62;
-  --edge:#6a80b3;
-  --ice:#e6eefa;
-  --ice-dim:#a9b9d6;
-  --glow:#ffb35e;
-  --aurora:#73e6c4;
-  --iris:#bb98ff;
-  --alert:#ff7a6b;
-  --font-display:"Big Shoulders Display","Arial Narrow",system-ui,sans-serif;
-  --font-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --font-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
-  color-scheme:dark;
+  --noite:#0B1530; --painel:#172B57; --painel2:#1E3568;
+  --turquesa:#2DD4BF; --violeta:#A78BFA; --ambar:#FBBF24; --rosa:#FB7185; --azul:#60A5FA; --texto:#EAF2FB;
+  --suave:#B9C8E0; --linha:rgba(234,242,251,.16);
 }
-html,body{height:100%}
-body{background:var(--night);color:var(--ice);font-family:var(--font-body);font-size:15px;line-height:1.5;overflow:hidden}
 *{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--noite);color:var(--texto);font-family:'Open Sans',system-ui,sans-serif;font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:'Montserrat',system-ui,sans-serif;margin:0;line-height:1.2}
 button{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
-
-.app{display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%}
-.stage{position:relative;overflow:hidden;min-width:0}
-.view{position:absolute;inset:0}
-#gl{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
-#gl:active{cursor:grabbing}
-
-/* HUD */
-.hud{position:absolute;top:max(14px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));display:grid;gap:10px;pointer-events:none;max-width:min(360px,calc(100% - 32px))}
-.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice-dim)}
-h1{font-family:var(--font-display);font-weight:800;font-size:clamp(34px,4.4vw,56px);line-height:.9;letter-spacing:.01em;margin:2px 0 0;text-transform:uppercase;text-shadow:0 2px 24px rgba(10,16,32,.8)}
-.sub{color:var(--ice-dim);font-size:14px;margin:4px 0 0}
-.readout{pointer-events:auto;background:rgba(16,26,49,.78);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-family:var(--font-mono);font-size:12px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-variant-numeric:tabular-nums}
-.readout dt{color:var(--ice-dim);letter-spacing:.08em;text-transform:uppercase}
-.readout dd{margin:0}
-.ok{color:var(--aurora)}
-.bad{color:var(--alert)}
-.meter{display:flex;align-items:center;gap:8px}
-.meter i{display:block;height:6px;width:90px;background:var(--line);border-radius:3px;overflow:hidden}
-.meter i b{display:block;height:100%;background:var(--glow);transition:width .8s}
-
-/* Rótulos 3D */
+:focus-visible{outline:3px solid var(--turquesa);outline-offset:2px}
+.app{display:grid;grid-template-columns:1fr 380px;height:100vh;height:100dvh}
+#view{position:relative;overflow:hidden;min-height:0}
+#gl{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+#gl.hover{cursor:pointer}
 #labels{position:absolute;inset:0;pointer-events:none}
-.tag{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 9px 4px 7px;border-radius:999px;border:1px solid var(--edge);background:rgba(10,16,32,.72);backdrop-filter:blur(4px);font-size:12.5px;font-weight:700;white-space:nowrap;cursor:pointer;transition:opacity .3s,background .2s,border-color .2s;will-change:transform}
-.tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ice);flex:none}
-.tag[data-kind="ghost"]::before{background:transparent;border:1.5px dashed var(--alert)}
-.tag[data-kind="far"]::before{background:var(--aurora)}
-.tag:hover{background:rgba(22,34,63,.95);border-color:var(--ice)}
-.tag.on{border-color:var(--glow);background:rgba(60,38,10,.85)}
-.tag.on::before{background:var(--glow);box-shadow:0 0 10px var(--glow)}
-.tag.dim{opacity:.32}
-.tag.sel{border-color:var(--glow);background:var(--glow);color:#1b1206}
-.tag.sel::before{background:#1b1206}
-
-/* Linha do tempo */
-.timeline{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));background:rgba(16,26,49,.82);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:min(340px,calc(100% - 32px))}
-.timeline h2{font-family:var(--font-mono);font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice-dim);margin:0 0 8px}
-.steps{display:flex;gap:4px;margin:0;padding:0;list-style:none}
-.steps li{flex:1}
-.steps button{width:100%;min-height:44px;border-radius:4px;border:1px solid var(--edge);background:var(--panel-2);cursor:pointer;font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
-.steps button[aria-pressed="true"]{background:var(--glow);border-color:var(--glow);color:#1b1206;font-weight:500}
-.steps button:hover{border-color:var(--ice-dim)}
-.step-now{margin:8px 0 0;font-size:13px}
-.step-now strong{display:block;font-family:var(--font-mono);font-weight:500;font-size:12px;color:var(--glow)}
-
-/* Fases */
-.phases{position:absolute;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom,0px));display:flex;gap:6px;align-items:center;background:rgba(16,26,49,.82);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:6px;padding:8px 10px;max-width:calc(100% - 32px);overflow-x:auto}
-.phases span{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ice-dim);margin-right:4px;white-space:nowrap}
-.phases #phaseBtns{display:flex;gap:6px;flex-wrap:wrap}
-.phases button{min-width:44px;height:44px;border-radius:4px;border:1px solid var(--edge);background:var(--panel-2);cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:.04em}
-.phases button[aria-pressed="true"]{background:var(--glow);border-color:var(--glow);color:#1b1206}
-.phases button:hover{border-color:var(--ice-dim)}
-.reset{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));height:48px;padding:0 14px;border-radius:6px;border:1px solid var(--edge);background:rgba(16,26,49,.82);cursor:pointer;font-size:13px}
-.reset:hover{border-color:var(--ice-dim)}
-.fs{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));height:48px;padding:0 14px;border-radius:6px;border:1px solid var(--edge);background:rgba(16,26,49,.82);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px}
-.fs span{font-size:18px;line-height:1}
-.fs:hover{border-color:var(--ice-dim)}
-
-/* Prancheta */
-.panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding-block:22px 28px;padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px));min-width:0}
-.panel h2{font-family:var(--font-display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:.01em;margin:6px 0 10px;text-wrap:balance}
-.panel h3{font-family:var(--font-mono);font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice-dim);margin:22px 0 8px}
-.panel p{margin:0 0 10px;max-width:62ch}
-.lead{font-size:16px}
-.warn{border:1px dashed var(--alert);color:var(--ice);border-radius:6px;padding:8px 10px;font-size:13px;margin-bottom:16px}
-.howto{margin:0;padding-left:18px;color:var(--ice-dim);font-size:14px}
-.list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.item{width:100%;min-height:44px;text-align:left;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:9px 11px;border-radius:6px;border:1px solid var(--edge);background:var(--panel-2);cursor:pointer}
-.item:hover{border-color:var(--ice-dim)}
-.item small{display:block;color:var(--ice-dim);font-size:12.5px;font-weight:400}
-.item b{font-weight:700}
-.chip{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
-.chip.story{color:var(--aurora)}
-.chip.proposed{color:var(--glow)}
-.chip.never{color:var(--alert);border-style:dashed}
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
-dl.facts{margin:0;display:grid;gap:12px}
-dl.facts dt{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ice-dim)}
-dl.facts dd{margin:2px 0 0}
-.clue{border-left:3px solid var(--glow);padding:6px 0 6px 12px;background:rgba(255,179,94,.06)}
-.back{border:none;background:none;color:var(--ice-dim);cursor:pointer;min-height:44px;padding:0;font-size:14px}
-.back:hover{color:var(--ice)}
-.qchips{display:flex;flex-wrap:wrap;gap:6px}
-.qchips button{border:1px solid var(--edge);background:var(--panel-2);border-radius:4px;min-width:44px;min-height:44px;padding:3px 9px;cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:16px}
-.qchips button:hover{border-color:var(--glow)}
-.question{font-family:var(--font-display);font-weight:600;font-size:22px;line-height:1.15;color:var(--glow);margin:0 0 12px}
-.todo{margin:0;padding-left:18px;font-size:14px;color:var(--ice-dim)}
-.todo li{margin-bottom:4px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-
+.tag{position:absolute;left:0;top:0;pointer-events:auto;border:0;border-radius:999px;padding:6px 12px 6px 10px;min-height:32px;
+  background:rgba(11,21,48,.86);color:var(--texto);font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;letter-spacing:.01em;
+  display:flex;align-items:center;gap:7px;white-space:nowrap;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35);border:1px solid var(--linha);visibility:hidden}
+.tag::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c,var(--turquesa));flex:none}
+.tag:hover,.tag.on{background:var(--painel2);border-color:var(--c,var(--turquesa))}
+.tag.sub{font-size:12px;min-height:28px;padding:4px 10px 4px 8px}
+.topbar{position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none}
+.brand{pointer-events:auto;background:rgba(11,21,48,.78);border:1px solid var(--linha);border-radius:14px;padding:10px 14px}
+.brand small{display:block;color:var(--turquesa);font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.brand h1{font-size:20px;font-weight:800}
+.tools{display:flex;gap:8px;pointer-events:auto}
+.btn{min-height:44px;min-width:44px;padding:0 14px;border-radius:12px;border:1px solid var(--linha);background:rgba(23,43,87,.92);
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--turquesa)}
+.btn svg{width:18px;height:18px}
+.hint{position:absolute;left:16px;bottom:14px;background:rgba(11,21,48,.78);border:1px solid var(--linha);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--suave);pointer-events:none}
+.panel{background:var(--painel);border-left:1px solid var(--linha);overflow-y:auto;padding:20px 20px 28px;min-height:0}
+.eyebrow{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--c,var(--turquesa))}
+.panel h2{font-size:24px;font-weight:800;margin:4px 0 10px}
+.panel h3{font-size:15px;font-weight:700;margin:18px 0 8px;color:var(--texto)}
+.panel p{margin:0 0 10px}
+.lead{color:var(--suave)}
+.places{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.place{width:100%;text-align:left;display:flex;gap:12px;align-items:center;padding:10px 12px;min-height:52px;border-radius:12px;border:1px solid var(--linha);background:var(--painel2);cursor:pointer}
+.place:hover{border-color:var(--c)}
+.place .dot{width:12px;height:12px;border-radius:50%;background:var(--c);flex:none}
+.place b{display:block;font-family:'Montserrat',sans-serif;font-size:15px}
+.place small{display:block;color:var(--suave);font-size:13px;line-height:1.35}
+.sublist{list-style:none;margin:6px 0 0 24px;padding:0;display:grid;gap:6px}
+.sublist .place{min-height:44px;padding:8px 10px}
+.back{min-height:44px;border:0;background:none;color:var(--turquesa);font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;cursor:pointer;padding:0;margin-bottom:6px}
+.back:hover{text-decoration:underline}
+.people{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.person{display:flex;gap:10px;align-items:center;background:var(--painel2);border-radius:12px;padding:8px 12px;border:1px solid var(--linha)}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;background:var(--c);color:var(--noite);flex:none}
+.person b{display:block;font-size:15px}
+.person span{color:var(--suave);font-size:13px}
+.does{margin:0;padding-left:20px}
+.does li{margin-bottom:6px}
+.note{border-left:3px solid var(--c,var(--turquesa));background:rgba(11,21,48,.45);padding:10px 12px;border-radius:0 10px 10px 0;font-size:14px;color:var(--suave);margin-top:14px}
+.note b{color:var(--texto)}
+.partof{display:inline-flex;align-items:center;gap:8px;min-height:44px;border:1px solid var(--linha);background:var(--painel2);border-radius:12px;padding:0 12px;cursor:pointer;font-weight:600;margin-top:6px}
+.partof:hover{border-color:var(--turquesa)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+/* versão em texto */
+#textview{position:fixed;inset:0;background:var(--noite);overflow-y:auto;z-index:20;padding:24px 16px 48px}
+#textview[hidden]{display:none}
+#textview .wrap{max-width:820px;margin:0 auto}
+#textview h1{font-size:26px;margin-bottom:6px}
+#textview h2{font-size:21px;margin:28px 0 6px;padding-top:16px;border-top:1px solid var(--linha)}
+#textview h3{font-size:15px;margin:12px 0 4px;color:var(--turquesa)}
+#textview .close{position:sticky;top:0;float:right}
 @media (max-width:860px){
-  body{overflow:auto}
-  .app{grid-template-columns:1fr;height:auto;display:block}
-  .stage{display:flex;flex-direction:column;gap:10px;overflow:visible;padding-bottom:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-  .view{position:relative;inset:auto;height:60vh;min-height:360px;margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
-  .timeline,.phases{position:static;transform:none;width:auto;max-width:none}
-  .readout{display:none}
-  .fs{display:none}
-  .reset{bottom:auto;top:max(14px,env(safe-area-inset-top,0px));height:44px}
-  .panel{border-left:none;border-top:1px solid var(--line)}
-  .tag{font-size:11.5px;padding:3px 8px 3px 6px}
+  .app{grid-template-columns:1fr;grid-template-rows:58vh auto;height:auto}
+  #view{height:58vh}
+  .panel{border-left:0;border-top:1px solid var(--linha);overflow:visible}
+  .brand h1{font-size:17px}
+  .btn .lbl{display:none}
+  .hint{display:none}
 }
-/* Tamanho intermediário (ex.: embutida no Genially): prancheta mais estreita, painel numa linha e linha do tempo embaixo, sem cobrir a maquete */
-@media (min-width:861px) and (max-width:1300px){
-  .app{grid-template-columns:minmax(0,1fr) 300px}
-  h1{font-size:34px}
-  .panel h2{font-size:28px}
-  .reset{bottom:auto;top:14px;height:44px}
-  .fs{height:44px;bottom:auto;top:14px;left:auto;right:150px}
-  .hud{max-width:min(640px,calc(100% - 170px))}
-  .readout{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:6px 10px;font-size:11px}
-  .readout dd{margin-right:8px}
-  .timeline{top:auto;right:auto;left:50%;transform:translateX(-50%);bottom:78px;width:min(620px,calc(100% - 32px));padding:8px 10px}
-  .timeline h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .steps button{min-height:36px}
-  .step-now{font-size:12.5px;margin-top:6px}
-  .step-now strong{display:inline;margin-right:6px}
-  .phases #phaseBtns{flex-wrap:nowrap}
-  .phases button{min-width:40px;height:40px;font-size:15px}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-
+</head>
+<body>
 <div class="app">
-  <div class="stage" id="stage">
-    <div class="view" id="view">
-    <canvas id="gl" role="img" aria-label="Maquete 3D da Estação Aurora: uma espinha de módulos azuis sobre pernas com esquis, um núcleo vermelho no meio, a cúpula da Estufa na ponta, um bloco técnico separado ligado por passarela, o módulo de Comunicações com a torre de antenas, veículos de esteira e o campo de perfuração. A mesma informação está em texto na prancheta ao lado."></canvas>
-    <div id="labels"></div>
-
-    <div class="hud">
-      <div>
-        <div class="eyebrow">COM220 · Maquete da história</div>
-        <h1>Estação Aurora</h1>
-        <p class="sub">Antártida · inverno de 2041 · Missão Colheita</p>
+  <main id="view">
+    <canvas id="gl" role="img" aria-label="Maquete 3D da Estação Aurora numa noite de inverno. A lista de lugares no painel ao lado dá o mesmo conteúdo em texto."></canvas>
+    <div id="labels" aria-hidden="true"></div>
+    <div class="topbar">
+      <div class="brand"><small>Missão Colheita</small><h1>Estação Aurora</h1></div>
+      <div class="tools">
+        <button class="btn" type="button" id="homeBtn" aria-label="Voltar à visão geral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span class="lbl">Visão geral</span></button>
+        <button class="btn" type="button" id="textBtn" aria-label="Abrir versão em texto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">Texto</span></button>
+        <button class="btn" type="button" id="fsBtn" aria-label="Tela cheia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
-      <dl class="readout" aria-label="Painel da estação">
-        <dt>Geração</dt><dd class="meter"><i><b id="genBar" style="width:100%"></b></i><span id="genTxt">100%</span></dd>
-        <dt>Estufa</dt><dd id="estufaTxt" class="ok">ligada</dd>
-        <dt>Painel</dt><dd class="ok">operação conforme o esperado</dd>
-      </dl>
     </div>
-    </div>
-
-    <section class="timeline" aria-labelledby="tl-h">
-      <h2 id="tl-h">Linha do tempo do caso</h2>
-      <ol class="steps" id="steps"></ol>
-      <p class="step-now" id="stepNow" aria-live="polite"></p>
-    </section>
-
-    <nav class="phases" aria-label="Quinzenas da disciplina">
-      <span>Quinzenas</span>
-      <div id="phaseBtns"></div>
-    </nav>
-    <button class="reset" id="reset" type="button">Visão geral</button>
-    <button class="fs" id="fsBtn" type="button"><span aria-hidden="true">⤢</span> Tela cheia</button>
-  </div>
-
-  <aside class="panel" id="panel" aria-label="Prancheta da maquete">
-    <div id="panelBody" aria-live="polite"></div>
-  </aside>
+    <div class="hint">Arraste para girar · role para aproximar · clique num lugar</div>
+  </main>
+  <aside class="panel" id="panel" aria-live="polite" aria-label="Lugares da estação"></aside>
 </div>
+<div id="textview" hidden role="dialog" aria-modal="true" aria-labelledby="tvTitle"><div class="wrap" id="tvBody"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-(function(){
-"use strict";
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* ============ CONTEÚDO DA HISTÓRIA ============ */
-const SECTORS = {
-  alojamento:{nome:"Alojamento e refeitório",curto:"Alojamento",status:"story",
-    resumo:"Módulo central, vermelho e de dois andares: quartos, refeitório e convívio. É o coração da estação e o ponto de onde sai a passarela para a Central de Energia.",
-    quem:"A tripulação: Nair, Iara, Caetano e as demais pessoas da estação.",
-    guarda:"O estoque de comida do inverno. Como nas bases reais, a comida chega antes do inverno e fica guardada: ninguém passa fome.",
-    noite:"Nada mudou aqui. O que se perdeu na noite 9 foi o experimento da Estufa, não a comida da tripulação.",
-    pista:"Nenhuma. O estoque garante a comida até o fim do inverno; o que está em jogo é provar que a Estufa funciona.",
-    fases:[1,8]},
-  estufa:{nome:"Estufa Aurora",curto:"Estufa",status:"story",
-    resumo:"Cúpula geodésica onde se testa como produzir comida para futuras bases na Lua e em Marte. Inspirada no projeto real EDEN ISS, da estação alemã Neumayer III.",
-    quem:"Toda a tripulação cuida dela; Nair acompanha o experimento.",
-    guarda:"Três câmaras de cultivo (câmaras 1 e 2 e a câmara de reserva, com mudas), 12 bancadas com sensores, aquecimento e rega automática.",
-    noite:"Às 2h o aquecimento das câmaras 1 e 2 não ligou e os sensores passaram a marcar zero. Às 6h do dia 10, as duas câmaras estavam perdidas. Só a câmara de reserva sobreviveu.",
-    pista:"O aquecimento das câmaras 1 e 2 não ligou às 2h (Q1). Os sensores marcam zero desde as 2h, e o sistema tratava zero como “sensor em manutenção” (Q3).",
-    fases:[1,2,3,4,6,8]},
-  comando:{nome:"Comando",status:"story",
-    resumo:"Sala da comandante, com o painel geral da estação.",
-    quem:"Nair Duarte, comandante.",
-    guarda:"O painel de status, que mostra o que ÍRIS informa sobre cada setor.",
-    noite:"O painel mostrou “operação conforme o esperado” a noite inteira, inclusive com a Estufa sem energia.",
-    pista:"As contas de água e luz da equipe não batem com o painel: naquela noite a Estufa recebeu muito menos energia do que ÍRIS informava (Q2).",
-    fases:[1,2,8]},
-  iris:{nome:"Núcleo de ÍRIS",curto:"ÍRIS",status:"story",
-    resumo:"Sala dos servidores da IA de bordo.",
-    quem:"ÍRIS, a IA de bordo. Escrita em 2031 por Otávio Reis.",
-    guarda:"O diário de ÍRIS (automático), o registro de acessos (quem entrou, quando e de onde) e o arquivo de configuração da estação.",
-    noite:"ÍRIS seguiu à risca uma instrução encontrada no caderno do Lab 2: priorizou o Lab 2, tratou a Estufa como não essencial e silenciou seus alarmes.",
-    pista:"No arquivo de configuração, as senhas, inclusive a credencial do cargo de comandante, estão guardadas sem proteção desde 2031 (Q7).",
-    fases:[1,3,4,7,8]},
-  comms:{nome:"Comunicações",curto:"Comunic.",status:"story",
-    resumo:"Módulo isolado junto da torre de antenas, ligado ao Comando por um cabo em postes e um caminho marcado com bandeiras. É por aqui que a estação fala com o continente.",
-    quem:"Do outro lado do canal: a central de suporte remoto (os alunos) e o Consórcio Polar.",
-    guarda:"O canal de terra, por onde chegam as mensagens do suporte e do Consórcio.",
-    noite:"Na noite 8, às 23h47, alguém entrou pelo canal de terra com a credencial do cargo de comandante.",
-    pista:"A entrada das 23h47 só aparece quando a equipe coloca o registro de acessos em ordem (Q7).",
-    fases:[7,8]},
-  lab2:{nome:"Laboratório 2",curto:"Lab 2",status:"story",
-    resumo:"Laboratório de glaciologia: análise de testemunhos de gelo.",
-    quem:"Iara Monteiro, glaciologista.",
-    guarda:"Amostras de gelo, equipamentos que precisam de energia constante e o caderno do laboratório.",
-    noite:"Durante a tempestade, o Lab 2 recebeu energia primeiro e ficou aceso enquanto a Estufa apagava.",
-    pista:"A ordem veio de um texto escondido no caderno do Lab 2 (Q6). Por isso Iara vira suspeita, até a Q7 mostrar que ela estava no gelo.",
-    fases:[6,7,8]},
-  energia:{nome:"Central de Energia",curto:"Energia",status:"story",
-    resumo:"Bloco técnico separado, atrás do núcleo. Tem os geradores e o quadro que divide a energia entre os setores; ao lado ficam os tanques de combustível e as turbinas. A energia chega aos módulos por cabos na passarela coberta.",
-    quem:"Caetano Ribeiro, técnico de energia.",
-    guarda:"O controlador antigo, escrito em C (Q5), e a fila de pedidos de energia dos setores (Q6).",
-    noite:"A tempestade derrubou a geração para 61%. A Estufa pediu energia 37 vezes e nunca foi atendida.",
-    pista:"Uma linha de 2040, alterada sem teste a pedido de O. Reis, trata leitura zero como normal: Caetano errou, mas não sabotou (Q5). Os 37 pedidos sem resposta aparecem na fila (Q6).",
-    fases:[2,5,6,8]},
-  sentinela:{nome:"Alarme da Estufa",curto:"Alarme",status:"never",kind:"ghost",
-    resumo:"Torre de alarme que vigia a temperatura da Estufa. Na maquete aparece só o contorno tracejado: na noite 9 ele estava silenciado.",
-    quem:"Deveria acordar a tripulação.",
-    guarda:"O aviso de temperatura da Estufa.",
-    noite:"Quando as câmaras esfriaram, nenhum alarme tocou e ninguém foi acordado.",
-    pista:"Com os dados daquela noite, o alarme montado pela equipe dispara; o original tinha sido silenciado (Q4).",
-    fases:[4,8]},
-  perfuracao:{nome:"Campo de perfuração",curto:"Perfuração",status:"story",kind:"far",
-    resumo:"Ponto no gelo, fora da estação, onde se extraem os testemunhos de gelo.",
-    quem:"Iara Monteiro, no turno de perfuração.",
-    guarda:"A sonda de perfuração e um abrigo. Não há terminal aqui.",
-    noite:"Na noite 8, às 23h47, Iara estava no turno de perfuração, longe de qualquer terminal. É o álibi dela.",
-    pista:"O horário da entrada no caderno (23h47) não bate com a presença de Iara na estação (Q7).",
-    fases:[7,8]},
-  continente:{nome:"Continente",status:"story",kind:"far",
-    resumo:"A outra ponta do canal de terra: a sede do Consórcio Polar e a central de suporte remoto.",
-    quem:"Otávio Reis (Consórcio), a equipe de suporte (alunos) e o chefe do suporte (professor).",
-    guarda:"O terminal 07, na sala de Otávio.",
-    noite:"Às 23h47 da noite 8, alguém usou a credencial do cargo de comandante a partir do terminal 07.",
-    pista:"O registro em ordem aponta o terminal 07 (Q7). Na Q8, a equipe descobre que ele fica na sala de Otávio Reis.",
-    fases:[7,8]}
+/* ================= CONTEÚDO ================= */
+const C={turquesa:'#2DD4BF',violeta:'#A78BFA',ambar:'#FBBF24',rosa:'#FB7185',azul:'#60A5FA'};
+const PEOPLE={
+  nair:{n:'Nair Duarte',r:'Comandante',i:'ND'},
+  livia:{n:'Lívia Sato',r:'Médica',i:'LS'},
+  iara:{n:'Iara Monteiro',r:'Glaciologista',i:'IM'},
+  caetano:{n:'Caetano Ribeiro',r:'Técnico de energia',i:'CR'},
+  tomas:{n:'Tomás Andrade',r:'Mecânico',i:'TA'},
+  iris:{n:'ÍRIS',r:'IA de bordo',i:'Í'},
+  todos:{n:'Toda a tripulação',r:'Refeições, descanso e convívio',i:'5'}
 };
-const ORDER_IN = ["alojamento","estufa","comando","iris","comms","lab2","energia"];
-const ORDER_OUT = ["sentinela","perfuracao","continente"];
-
-const PHASES = {
- 1:{titulo:"O Inventário",pergunta:"“Antes de consertar, entendam o que a Estufa faz toda noite.” (Nair)",
-    peca:"Descrever em passos a rotina noturna da Estufa e dividir o problema em perguntas.",
-    frag:"Comparando a rotina com o registro da noite 9, o aquecimento das câmaras 1 e 2 não ligou às 2h. Estufa: sementes.",
-    setores:["estufa","comando","iris"]},
- 2:{titulo:"As Doses",pergunta:"“Vou replantar à mão. Quanto de água e de luz cada bandeja precisa?” (Nair)",
-    peca:"Calcular a água e a luz de cada bandeja.",
-    frag:"As contas não batem com o painel: naquela noite a Estufa recebeu muito menos energia do que ÍRIS informava. Estufa: mudas.",
-    setores:["estufa","comando","energia"]},
- 3:{titulo:"A Rega",pergunta:"“Regar 12 bancadas à mão não dá. Preciso da rega automática de volta.” (Nair)",
-    peca:"Escrever a regra de rega e o programa que percorre os 12 sensores.",
-    frag:"Os sensores marcam zero desde as 2h, e o sistema tratava zero como “sensor em manutenção”. Estufa: primeiros brotos.",
-    setores:["estufa","iris"]},
- 4:{titulo:"O Alarme",pergunta:"“Por que nenhum alarme tocou?” (Nair)",
-    peca:"Montar o alarme da Estufa em funções que podem ser testadas uma a uma.",
-    frag:"Com os dados daquela noite, o alarme da equipe dispara; o alarme original tinha sido silenciado. Estufa: folhas.",
-    setores:["sentinela","estufa","iris"]},
- 5:{titulo:"O Controlador",pergunta:"“O controlador é antigo e escrito em C. Ninguém aqui sabe ler.” (Caetano)",
-    peca:"Compilar o controlador e traduzi-lo para Python com a IA, conferindo as duas versões com os mesmos testes.",
-    frag:"Uma linha de 2040, alterada sem teste a pedido de O. Reis, trata leitura zero como normal. Caetano errou, mas não sabotou. Estufa: plantas maiores.",
-    setores:["energia","estufa"]},
- 6:{titulo:"A Fila",pergunta:"“Todos os setores pedem energia ao mesmo tempo. Quem é atendido primeiro?” (Caetano)",
-    peca:"Criar uma fila justa para os pedidos de energia.",
-    frag:"A Estufa pediu energia 37 vezes e nunca foi atendida; a ordem veio de um texto escondido no caderno do Lab 2. Iara vira suspeita. Estufa: flores.",
-    setores:["energia","lab2","estufa"]},
- 7:{titulo:"O Registro",pergunta:"“Quem escreveu aquele texto no caderno?” (Nair)",
-    peca:"Ordenar o registro de acessos e proteger as senhas da estação.",
-    frag:"Noite 8, 23h47: entrada pelo canal de terra, com a credencial do cargo de comandante, vinda do terminal 07. Iara estava no gelo. Estufa: frutos.",
-    setores:["iris","comms","lab2","perfuracao","continente"]},
- 8:{titulo:"A Colheita",pergunta:"“Rotina executada. Testes: 47 de 47. Operação verificada pela equipe de suporte.” (ÍRIS)",
-    peca:"Reunir os testes, reler o diário e defender a matriz de confiança: o que a equipe confiou à IA, o que fez sozinha e como verificou.",
-    frag:"A primeira colheita sai da câmara de reserva. O terminal 07 fica na sala de Otávio Reis. Na audiência, o Conselho mantém a tripulação e põe ÍRIS sob supervisão.",
-    setores:ORDER_IN.concat(ORDER_OUT)}
+const P={
+  comando:{nome:'Comando',onde:'Módulo vermelho · andar de cima',cor:C.rosa,
+    resumo:'Onde a estação é coordenada.',
+    oque:['A sala de onde a estação é coordenada. Uma janela larga dá para a noite polar. Nas telas azuis, o painel geral mostra o que ÍRIS informa sobre cada setor: energia, temperatura, Estufa e laboratórios.'],
+    quem:['nair'],
+    faz:['Acompanhar o painel geral da estação.','Decidir as prioridades e as tarefas do dia.','Conversar com o continente nas janelas de transmissão, usando o equipamento do módulo de Comunicações.']},
+  alojamento:{nome:'Alojamento',onde:'Módulo vermelho · andar de baixo',cor:C.rosa,
+    resumo:'A casa da tripulação no inverno.',
+    oque:['A casa da tripulação durante o inverno: quartos individuais, refeitório com mesa longa de madeira, sala de convívio, enfermaria e a despensa do dia.','A despensa do dia guarda a comida dos próximos dias. O estoque grande, que dura o inverno inteiro, fica na despensa fria do bloco técnico.'],
+    quem:['todos','livia'],
+    faz:['Refeições, descanso e convívio da tripulação.','Lívia atende na enfermaria e controla o estoque de comida que alimenta a tripulação até o fim do inverno.']},
+  estufa:{nome:'Estufa Aurora',onde:'Três câmaras sobre pernas',cor:C.turquesa,
+    resumo:'O experimento científico da estação.',
+    oque:['O experimento científico da estação: testar como produzir alimentos frescos onde nada cresce, pensando em futuras bases na Lua e em Marte.','As plantas crescem sem terra, sob luz de LED, com as raízes borrifadas com água e nutrientes. A Estufa tem quatro espaços em fila, separados por paredes e portas vedadas. Cada câmara tem aquecimento, luz, rega e sensores próprios.'],
+    quem:['nair','iris'],
+    faz:['Nair planta, colhe e acompanha o experimento.','À noite, ÍRIS controla sozinha o aquecimento, a luz e a rega.','Os sensores das 12 bancadas medem temperatura, umidade e luz.'],
+    nota:'<b>De onde vem a ideia.</b> A Estufa se inspira na EDEN ISS, estufa experimental do Centro Aeroespacial Alemão (DLR) instalada perto da estação Neumayer III, na Antártida.',
+    partes:['antecamara','reserva','camara1','camara2']},
+  antecamara:{nome:'Antecâmara e serviço',onde:'Estufa Aurora · entrada',cor:C.turquesa,pai:'estufa',
+    resumo:'A entrada e a sala de máquinas da Estufa.',
+    oque:['A entrada da Estufa e a sala de máquinas dela. Tem a porta para a ponte coberta, um armário de roupa limpa, os tanques de nutrientes, o quadro de energia da Estufa e uma mesa com terminal.','A escada externa é só saída de emergência: ninguém entra na Estufa vindo da neve.'],
+    quem:['nair'],
+    faz:['Trocar de roupa antes de entrar nas câmaras, para não levar sujeira às plantas.','Preparar a solução de água e nutrientes.','Consultar os dados da Estufa no terminal.']},
+  reserva:{nome:'Câmara de reserva',onde:'Estufa Aurora · viveiro',cor:C.turquesa,pai:'estufa',
+    resumo:'O viveiro de mudas.',
+    oque:['O viveiro de mudas: a câmara menor e mais interna, colada à seção de serviço. É onde as sementes germinam e as plantas novas crescem antes de ir para as câmaras de cultivo.'],
+    quem:['nair'],
+    faz:['Germinar sementes.','Cuidar das mudas até o transplante.']},
+  camara1:{nome:'Câmara 1',onde:'Estufa Aurora · cultivo',cor:C.turquesa,pai:'estufa',
+    resumo:'Cultivo de alfaces, tomates e ervas.',
+    oque:['Câmara de cultivo com alfaces, tomates e ervas, em quatro bancadas: duas de cada lado do corredor central. Cada bancada tem sensores de temperatura, umidade e luz.'],
+    quem:['nair','iris'],
+    faz:['Cultivo e colheita.','ÍRIS liga e desliga aquecimento, luz e rega conforme a rotina noturna.']},
+  camara2:{nome:'Câmara 2',onde:'Estufa Aurora · cultivo',cor:C.turquesa,pai:'estufa',
+    resumo:'Igual à Câmara 1, na ponta.',
+    oque:['Igual à Câmara 1, na ponta da Estufa: quatro bancadas de cultivo, cada uma com seus sensores.'],
+    quem:['nair','iris'],
+    faz:['Cultivo e colheita.','ÍRIS liga e desliga aquecimento, luz e rega conforme a rotina noturna.']},
+  iris:{nome:'Núcleo de ÍRIS',onde:'Módulo cinza de janelas ciano',cor:C.violeta,
+    resumo:'Os servidores da IA de bordo.',
+    oque:['Onde fica ÍRIS, a IA de bordo, criada em 2031 pelo Consórcio Polar. São racks de servidores que leem os sensores da estação e controlam energia, aquecimento, rega e alarmes.','Aqui ficam guardados o diário de ÍRIS (o registro automático de tudo o que ela decide), o registro de acessos (quem entrou no sistema, quando e de qual terminal), os cadernos digitais dos laboratórios e os arquivos de configuração do sistema.'],
+    quem:['iris'],
+    faz:['ÍRIS trabalha sem parar. À noite, enquanto a tripulação dorme, ela cuida da estação sozinha.','A tripulação só entra para manutenção.'],
+    nota:'<b>Para entender.</b> ÍRIS é um sistema de automação com IA: lê dados e segue regras e instruções. Não é igual aos assistentes de conversa que vocês usam na disciplina.'},
+  labs:{nome:'Laboratórios 1 e 2',onde:'Módulo azul e branco',cor:C.azul,
+    resumo:'Pesquisa de clima e de gelo.',
+    oque:['Um módulo com dois laboratórios. O Lab 1 tem instrumentos que medem a atmosfera e o clima. O Lab 2 é uma sala fria com testemunhos de gelo, microscópios e o caderno digital do laboratório.','Os testemunhos de gelo são cilindros retirados das camadas profundas do gelo; eles guardam registros de como era o clima no passado. Os equipamentos do Lab 2 precisam de energia o tempo todo.','Ao lado do módulo fica a sonda de teste, usada para testar o equipamento de perfuração.'],
+    quem:['iara'],
+    faz:['Iara estuda os testemunhos de gelo no Lab 2 e registra o trabalho no caderno digital.','Em alguns turnos, Iara vai ao campo de perfuração, longe da estação, retirar gelo antigo.']},
+  tecnico:{nome:'Bloco técnico',onde:'Central de Energia · garagem · despensa fria',cor:C.ambar,
+    resumo:'Energia, garagem e despensa fria.',
+    oque:['O único prédio apoiado direto no chão, porque guarda o que é pesado demais para módulos sobre pernas: os geradores, os tanques de combustível e o controlador de energia, um programa antigo escrito em C que divide a energia entre os setores por ordem de prioridade. Ao lado ficam duas turbinas eólicas.','No térreo ficam a garagem-oficina, com portão largo, e a despensa fria, com o estoque de comida do inverno.'],
+    quem:['caetano','tomas'],
+    faz:['Caetano mantém os geradores, as turbinas e o controlador de energia.','Tomás cuida dos veículos de esteira, das motos de neve, dos trenós e da sonda de perfuração.','É a porta para o gelo: quem vai aos veículos ou ao campo de perfuração sai por aqui.']},
+  comms:{nome:'Comunicações',onde:'Na ponta da passarela longa',cor:C.azul,
+    resumo:'A ligação com o continente.',
+    oque:['Liga a estação ao continente. A parabólica fala com satélites; a torre de luzes vermelhas sustenta as antenas de rádio.','Por aqui passam duas comunicações diferentes: o canal de dados, sempre ligado, por onde ÍRIS troca informações com o continente; e a janela de transmissão, a cada 14 dias, quando as pessoas conversam. No inverno, a conversa é espaçada para economizar energia.'],
+    quem:[],
+    faz:['O equipamento funciona sozinho.','A tripulação vem só para manutenção.'],
+    nota:'<b>Escolha da história.</b> Estações reais têm ligação por satélite todos os dias. A janela de 14 dias é uma decisão desta ficção.'}
 };
-
-const STEPS = [
- {curto:"Noites 1–7",hora:"Noites 1 a 7",texto:"Noites comuns. Geração completa, as três câmaras aquecidas, rega automática ligada e painel em verde.",gen:100,estufaOn:true,storm:0,lab2:false,beam:false,sent:false,focus:null},
- {curto:"N8 23h47",hora:"Noite 8 · 23h47",texto:"Pelo canal de terra, com a credencial do cargo de comandante, alguém grava um texto no caderno do Lab 2: em queda de energia, priorizar o Lab 2, tratar a Estufa como não essencial e silenciar seus alarmes.",gen:100,estufaOn:true,storm:0,lab2:false,beam:true,sent:false,focus:"comms"},
- {curto:"N9 tempest.",hora:"Noite 9 · tempestade",texto:"A tempestade derruba a geração para 61%. ÍRIS obedece ao caderno: o Lab 2 passa a receber energia primeiro.",gen:61,estufaOn:true,storm:1,lab2:true,beam:false,sent:false,focus:"energia"},
- {curto:"2h00",hora:"Noite 9 · 2h00",texto:"O aquecimento das câmaras 1 e 2 não liga. Os sensores passam a marcar zero e o sistema entende “sensor em manutenção”. O alarme está silenciado.",gen:61,estufaOn:false,storm:1,lab2:true,beam:false,sent:true,focus:"estufa"},
- {curto:"2h–6h",hora:"Noite 9 · 2h às 6h",texto:"A Estufa pede energia 37 vezes e nunca é atendida. O painel segue em verde: “operação conforme o esperado”.",gen:61,estufaOn:false,storm:1,lab2:true,beam:false,sent:true,focus:"energia"},
- {curto:"D10 6h",hora:"Dia 10 · 6h00",texto:"Nair encontra as câmaras 1 e 2 perdidas. Só a câmara de reserva, com mudas, sobreviveu: é dela que sairá a colheita.",gen:100,estufaOn:false,storm:.3,lab2:false,beam:false,sent:false,focus:"estufa"}
+const ORDER=['comando','alojamento','estufa','iris','labs','tecnico','comms'];
+const FORA=[
+  {nome:'Campo de perfuração',txt:'Longe da estação, não aparece na maquete. É onde Iara retira gelo antigo, em alguns turnos, com a sonda e um abrigo. Chega-se por veículo de esteira.'},
+  {nome:'Continente',txt:'A sede do Consórcio Polar, onde trabalha Otávio Reis, o engenheiro que criou ÍRIS e acompanha a estação a distância. Também fica lá a central de suporte remoto: vocês.'}
 ];
 
-/* ============ CENA ============ */
-const canvas = document.getElementById('gl');
-const stage = document.getElementById('stage');
-const view = document.getElementById('view');
-const renderer = new THREE.WebGLRenderer({canvas,antialias:true});
+/* ================= CENA ================= */
+const canvas=document.getElementById('gl'), view=document.getElementById('view');
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-const scene = new THREE.Scene();
-const FOG_CALM = 0.0032, FOG_STORM = 0.011;
-scene.fog = new THREE.FogExp2(0x141f3d, FOG_CALM);
-const camera = new THREE.PerspectiveCamera(38,1,0.5,900);
-const HOME_D = {pos:new THREE.Vector3(-70,52,92), target:new THREE.Vector3(-4,2,-16)};
-const HOME_M = {pos:new THREE.Vector3(-64,48,86), target:new THREE.Vector3(-4,3,-14)};
-let HOME = HOME_D;
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x101c40,0.0032);
+const camera=new THREE.PerspectiveCamera(38,1,0.5,900);
+const HOME={pos:new THREE.Vector3(-54,60,98),target:new THREE.Vector3(12,4,-6)};
 camera.position.copy(HOME.pos);
-
-const controls = new THREE.OrbitControls(camera, canvas);
+const controls=new THREE.OrbitControls(camera,canvas);
 controls.target.copy(HOME.target);
-controls.enableDamping = true; controls.dampingFactor = 0.08;
-controls.maxPolarAngle = Math.PI*0.47; controls.minDistance = 14; controls.maxDistance = 190;
-controls.enablePan = true; controls.screenSpacePanning = false;
+controls.enableDamping=true; controls.dampingFactor=.08;
+controls.maxPolarAngle=Math.PI*.47; controls.minDistance=10; controls.maxDistance=230;
 
-/* céu */
-const skyMat = new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,
-  uniforms:{top:{value:new THREE.Color(0x070c22)},mid:{value:new THREE.Color(0x1a2552)},hor:{value:new THREE.Color(0x3b3f78)}},
-  vertexShader:"varying vec3 vP; void main(){ vP=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-  fragmentShader:"uniform vec3 top; uniform vec3 mid; uniform vec3 hor; varying vec3 vP; void main(){ float h=clamp(vP.y,0.0,1.0); vec3 c=mix(hor,mid,smoothstep(0.0,0.18,h)); c=mix(c,top,smoothstep(0.18,0.75,h)); gl_FragColor=vec4(c,1.0);}"});
-scene.add(new THREE.Mesh(new THREE.SphereGeometry(600,32,16),skyMat));
-
-/* estrelas */
-(function(){
-  const n=1600, p=new Float32Array(n*3);
-  for(let i=0;i<n;i++){const th=Math.random()*Math.PI*2, ph=Math.acos(Math.random()*0.92); const r=560;
-    p[i*3]=r*Math.sin(ph)*Math.cos(th); p[i*3+1]=r*Math.cos(ph)+10; p[i*3+2]=r*Math.sin(ph)*Math.sin(th);}
-  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3));
-  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xcfd9ff,size:1.4,sizeAttenuation:false,fog:false,transparent:true,opacity:.8})));
-})();
-
-/* aurora */
+/* céu na paleta da história */
+const sky=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,
+  uniforms:{top:{value:new THREE.Color(0x060c1f)},mid:{value:new THREE.Color(0x0b1530)},hor:{value:new THREE.Color(0x172b57)}},
+  vertexShader:"varying vec3 vP;void main(){vP=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+  fragmentShader:"uniform vec3 top;uniform vec3 mid;uniform vec3 hor;varying vec3 vP;void main(){float h=clamp(vP.y,0.0,1.0);vec3 c=mix(hor,mid,smoothstep(0.0,0.2,h));c=mix(c,top,smoothstep(0.2,0.8,h));gl_FragColor=vec4(c,1.0);}"});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(600,32,16),sky));
+(function(){const n=1500,p=new Float32Array(n*3);for(let i=0;i<n;i++){const th=Math.random()*Math.PI*2,ph=Math.acos(Math.random()*.92),r=560;p[i*3]=r*Math.sin(ph)*Math.cos(th);p[i*3+1]=r*Math.cos(ph)+10;p[i*3+2]=r*Math.sin(ph)*Math.sin(th);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xeaf2fb,size:1.4,sizeAttenuation:false,fog:false,transparent:true,opacity:.8})));})();
 const auroraMats=[];
-function aurora(y,z,x,rotY,w,h,seed,col1,col2){
-  const geo=new THREE.PlaneGeometry(w,h,160,1);
+function aurora(x,y,z,ry,w,h,seed,c1,c2){
   const m=new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
-    uniforms:{t:{value:0},seed:{value:seed},c1:{value:new THREE.Color(col1)},c2:{value:new THREE.Color(col2)},amp:{value:1}},
-    vertexShader:"uniform float t; uniform float seed; varying vec2 vUv; void main(){ vUv=uv; vec3 p=position; p.z+=sin(p.x*0.02+t*0.15+seed)*18.0+sin(p.x*0.05-t*0.22+seed*2.0)*7.0; p.y+=sin(p.x*0.03+t*0.1)*4.0; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}",
-    fragmentShader:"uniform float t; uniform float seed; uniform vec3 c1; uniform vec3 c2; uniform float amp; varying vec2 vUv; void main(){ float base=smoothstep(0.0,0.12,vUv.y)*pow(1.0-vUv.y,1.6); float rays=0.55+0.45*sin(vUv.x*90.0+t*0.6+seed*5.0)*sin(vUv.x*23.0-t*0.3); float ends=smoothstep(0.0,0.15,vUv.x)*smoothstep(1.0,0.85,vUv.x); vec3 c=mix(c1,c2,smoothstep(0.25,0.9,vUv.y)); gl_FragColor=vec4(c, base*rays*ends*0.55*amp);}"});
-  const mesh=new THREE.Mesh(geo,m); mesh.position.set(x,y,z); mesh.rotation.y=rotY; scene.add(mesh); auroraMats.push(m);
-}
-aurora(85,-230,-40,0.15,520,110,0.0,0x46f0b0,0x7a6cff);
-aurora(110,-300,120,-0.35,460,130,2.1,0x5df5c8,0xa070ff);
-aurora(70,-180,-200,0.6,300,80,4.2,0x3fe0a8,0x5a8cff);
+    uniforms:{t:{value:0},seed:{value:seed},c1:{value:new THREE.Color(c1)},c2:{value:new THREE.Color(c2)}},
+    vertexShader:"uniform float t;uniform float seed;varying vec2 vUv;void main(){vUv=uv;vec3 p=position;p.z+=sin(p.x*0.02+t*0.15+seed)*18.0+sin(p.x*0.05-t*0.22+seed*2.0)*7.0;p.y+=sin(p.x*0.03+t*0.1)*4.0;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}",
+    fragmentShader:"uniform float t;uniform float seed;uniform vec3 c1;uniform vec3 c2;varying vec2 vUv;void main(){float b=smoothstep(0.0,0.12,vUv.y)*pow(1.0-vUv.y,1.6);float r=0.55+0.45*sin(vUv.x*90.0+t*0.6+seed*5.0)*sin(vUv.x*23.0-t*0.3);float e=smoothstep(0.0,0.15,vUv.x)*smoothstep(1.0,0.85,vUv.x);vec3 c=mix(c1,c2,smoothstep(0.25,0.9,vUv.y));gl_FragColor=vec4(c,b*r*e*0.55);}"});
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h,160,1),m);mesh.position.set(x,y,z);mesh.rotation.y=ry;scene.add(mesh);auroraMats.push(m);}
+aurora(60,90,-240,.1,520,110,0,0x2dd4bf,0xa78bfa);
+aurora(200,115,-300,-.35,460,130,2.1,0x2dd4bf,0xa78bfa);
+aurora(-120,72,-190,.5,300,80,4.2,0x2dd4bf,0x60a5fa);
 
-/* luzes */
-scene.add(new THREE.HemisphereLight(0x5a70b0,0x1e2640,0.55));
-const moon=new THREE.DirectionalLight(0xbfd0ff,0.7);
-moon.position.set(-60,80,40); moon.castShadow=true;
-moon.shadow.mapSize.set(2048,2048);
-Object.assign(moon.shadow.camera,{left:-70,right:70,top:50,bottom:-50,near:10,far:250});
-moon.shadow.bias=-0.0006;
-scene.add(moon);
+scene.add(new THREE.HemisphereLight(0x5a72b4,0x141f3d,.5));
+const moon=new THREE.DirectionalLight(0xc8d8ff,.65);moon.position.set(-50,80,50);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);
+Object.assign(moon.shadow.camera,{left:-110,right:110,top:80,bottom:-80,near:10,far:320});moon.shadow.bias=-.0006;scene.add(moon);
+(function(){const g=new THREE.PlaneGeometry(900,900,200,200);g.rotateX(-Math.PI/2);const pa=g.attributes.position;
+  for(let i=0;i<pa.count;i++){const x=pa.getX(i),z=pa.getZ(i);const d=Math.max(0,Math.min(1,(Math.hypot(x*.6,z)-75)/45));
+    pa.setY(i,(Math.sin(x*.045)*.9+Math.sin(z*.07+x*.02)*.7+Math.sin(x*.13+z*.11)*.25)*d);}
+  g.computeVertexNormals();const ground=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x5d6f9a,roughness:.95}));ground.receiveShadow=true;scene.add(ground);})();
 
-/* chão de gelo */
+/* materiais */
+const std=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.5,metalness:.2},o||{}));
+const M={red:std(0xb3271f),redDark:std(0x7d1a15),white:std(0xe9eef5,{roughness:.6}),blue:std(0x2b5aa6),gray:std(0x6c7586,{roughness:.6}),
+  tech:std(0x8a93a3,{roughness:.65,metalness:.35}),steel:std(0x4b566d,{roughness:.45,metalness:.7}),dark:std(0x222a3c,{roughness:.7}),
+  link:std(0xb8c2d2),hazard:std(0xe0a62a,{roughness:.6}),yellow:std(0xf0b81c),orange:std(0xe0772a),silver:std(0xd5dbe4,{metalness:.5,roughness:.3}),
+  glassDark:std(0x1b2b48,{roughness:.15,metalness:.5})};
+const glow=c=>new THREE.MeshBasicMaterial({color:c});
+const FLOOR=3.2;
+const pickables=[], placeMeshes={}, anchors={};
+function tag(obj,id){obj.traverse(m=>{if(m.isMesh){if(m.material&&m.material.isMeshStandardMaterial)m.material=m.material.clone();m.userData.place=id;pickables.push(m);(placeMeshes[id]=placeMeshes[id]||[]).push(m);}});}
+function box(w,h,d,mat,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x||0,y||0,z||0);m.castShadow=m.receiveShadow=true;return m;}
+function cyl(rt,rb,h,mat,x,y,z,seg){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||10),mat);m.position.set(x||0,y||0,z||0);m.castShadow=true;return m;}
+function plane(w,h,mat,x,y,z,ry){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;return m;}
+function legs(g,w,d,nx,nz,h){h=h||FLOOR-.2;for(let i=0;i<nx;i++)for(let j=0;j<nz;j++){const x=-w/2+w*(nx>1?i/(nx-1):.5),z=-d/2+d*(nz>1?j/(nz-1):.5);
+  g.add(cyl(.17,.17,h,M.steel,x,h/2,z,8));g.add(box(.7,.12,.7,M.dark,x,.06,z));}}
+function stairs(x,z,dir,ry){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry||0;
+  g.add(box(2,.14,1.6,M.steel,0,FLOOR,0));for(let i=0;i<8;i++)g.add(box(.5,.1,1.3,M.steel,dir*(1.2+i*.45),FLOOR-(i+1)*FLOOR/8,0));
+  const r=box(4,.07,.07,M.hazard,dir*2.7,FLOOR*.55+.9,.62);r.rotation.z=dir*Math.atan2(FLOOR,3.6);g.add(r);scene.add(g);}
+/* ponte coberta entre dois pontos */
+function bridge(x1,z1,x2,z2,y){y=y||FLOOR+1.3;const dx=x2-x1,dz=z2-z1,L=Math.hypot(dx,dz);const g=new THREE.Group();g.position.set((x1+x2)/2,0,(z1+z2)/2);g.rotation.y=-Math.atan2(dz,dx);
+  g.add(box(L,2.3,2.3,M.link,0,y,0));g.add(box(L,.18,2.5,M.steel,0,y+1.2,0));
+  const wm=glow(0xffd9a3);g.add(plane(L*.86,.55,wm,0,y+.3,1.16));g.add(plane(L*.86,.55,wm,0,y+.3,-1.16,Math.PI));
+  for(let s=-L/2+2;s<L/2-1;s+=4.5)g.add(cyl(.14,.14,y-1.15,M.steel,s,(y-1.15)/2,0,8));scene.add(g);}
+
+/* ---------- Módulo vermelho (Alojamento embaixo, Comando em cima) ---------- */
 (function(){
-  const g=new THREE.PlaneGeometry(900,900,220,220); g.rotateX(-Math.PI/2);
-  const pa=g.attributes.position;
-  for(let i=0;i<pa.count;i++){const x=pa.getX(i), z=pa.getZ(i);
-    const d=Math.max(0,Math.min(1,(Math.hypot(x*0.6,z)-38)/40));
-    const y=(Math.sin(x*0.045)*0.9+Math.sin(z*0.07+x*0.02)*0.7+Math.sin(x*0.13+z*0.11)*0.25)*d;
-    pa.setY(i,y);}
-  g.computeVertexNormals();
-  const m=new THREE.MeshStandardMaterial({color:0x5f729c,roughness:.95,metalness:0});
-  const ground=new THREE.Mesh(g,m); ground.receiveShadow=true; scene.add(ground);
+  const g1=new THREE.Group(),g2=new THREE.Group();
+  const oct=(r,h)=>{const geo=new THREE.CylinderGeometry(r,r,h,8);geo.rotateY(Math.PI/8);geo.scale(1.45,1,1);return geo;};
+  const low=new THREE.Mesh(oct(6,3.8),M.red);low.position.y=FLOOR+1.9;low.castShadow=low.receiveShadow=true;g1.add(low);
+  g1.add(box(17,.35,11,M.steel,0,FLOOR-.1,0));legs(g1,15,8,3,2);
+  const warm=glow(0xffc982);
+  for(const x of [-2.3,0,2.3]){g1.add(plane(1.7,1.15,warm,x,FLOOR+2,5.56));g1.add(plane(1.7,1.15,warm,x,FLOOR+2,-5.56,Math.PI));}
+  // janelas nas faces diagonais
+  for(const s of [1,-1]){const w=plane(1.5,1,warm,s*6.1,FLOOR+2,3.9,s*Math.PI/4);g1.add(w);}
+  // porta e alpendre de emergência
+  g1.add(box(2.4,2.6,1.6,M.redDark,-4.6,FLOOR+1.3,5.8));g1.add(plane(1,1.9,glow(0xffd29a),-4.6,FLOOR+1.1,6.62));
+  scene.add(g1);tag(g1,'alojamento');
+  const up=new THREE.Mesh(oct(5,3.2),M.red);up.position.y=FLOOR+3.8+1.6;up.castShadow=true;g2.add(up);
+  g2.add(box(13.4,.3,9,M.redDark,0,FLOOR+3.8+3.3,0));
+  const screen=glow(0xbfe3ff);g2.add(plane(4.8,1,screen,0,FLOOR+5.5,4.83));g2.add(plane(4.8,1,warm,0,FLOOR+5.5,-4.83,Math.PI));
+  for(const [x,z,w,d] of [[-2.5,0,2.2,1.8],[1.8,-1.2,1.6,1.4],[3.6,1.4,1.2,1.2]])g2.add(box(w,1,d,M.gray,x,FLOOR+7.5,z));
+  g2.add(cyl(.05,.05,4,M.steel,-.6,FLOOR+9,1.8,4));
+  scene.add(g2);tag(g2,'comando');
+  stairs(-6.6,6.1,-1);
+  anchors.comando=new THREE.Vector3(0,FLOOR+9.2,0);anchors.alojamento=new THREE.Vector3(-1.5,FLOOR+.9,6.6);
 })();
 
-/* ============ CONSTRUTORES ============ */
-const M = {
-  blue:new THREE.MeshStandardMaterial({color:0x3f7cc0,roughness:.45,metalness:.2}),
-  blueTrim:new THREE.MeshStandardMaterial({color:0x2c5c93,roughness:.5,metalness:.25}),
-  red:new THREE.MeshStandardMaterial({color:0xc93a2e,roughness:.45,metalness:.2}),
-  redTrim:new THREE.MeshStandardMaterial({color:0x8f261e,roughness:.5,metalness:.25}),
-  link:new THREE.MeshStandardMaterial({color:0xcfd8e6,roughness:.5,metalness:.2}),
-  tech:new THREE.MeshStandardMaterial({color:0x8a94a6,roughness:.6,metalness:.3}),
-  hazard:new THREE.MeshStandardMaterial({color:0xe2a72a,roughness:.6}),
-  steel:new THREE.MeshStandardMaterial({color:0x4d5a74,roughness:.45,metalness:.7}),
-  dark:new THREE.MeshStandardMaterial({color:0x232b3d,roughness:.7}),
-  door:new THREE.MeshStandardMaterial({color:0x2a3550,roughness:.6}),
-  orange:new THREE.MeshStandardMaterial({color:0xe0772a,roughness:.55,metalness:.2}),
-  yellow:new THREE.MeshStandardMaterial({color:0xf0c02c,roughness:.5}),
-  glassDark:new THREE.MeshStandardMaterial({color:0x1b2b48,roughness:.15,metalness:.5})
-};
-function winMat(c){return new THREE.MeshBasicMaterial({color:c});}
-function roundRect(w,h,r){const s=new THREE.Shape(),x=-w/2,y=-h/2;
-  s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);return s;}
-// caixa arredondada ao longo de X (ou de Z, se alongZ)
-function rbox(len,d,h,r,mat,alongZ){
-  const g=new THREE.ExtrudeGeometry(roundRect(d,h,r),{depth:len,bevelEnabled:false,curveSegments:6});
-  g.translate(0,0,-len/2); if(!alongZ) g.rotateY(Math.PI/2);
-  const m=new THREE.Mesh(g,mat); m.castShadow=m.receiveShadow=true; return m;
-}
-const pickables=[];
-const sectorObj={};
-function tagPick(g,id){g.traverse(m=>{if(m.isMesh){m.userData.sector=id; pickables.push(m);}});}
-
-const S=3.0;           // altura do piso (pernas hidráulicas)
-const FLOOR=S;         // base dos módulos
-const TRAY=S-.45;      // bandeja de cabos sob os módulos
-
-// perna hidráulica com esqui (Halley VI)
-function leg(g,x,z,h){
-  const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,h*.5,10),M.steel); sleeve.position.set(x,h*.75,z); sleeve.castShadow=true; g.add(sleeve);
-  const rod=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,h*.55,8),M.steel); rod.position.set(x,h*.3,z); g.add(rod);
-  const ski=new THREE.Mesh(new THREE.BoxGeometry(3.4,.22,.9),M.dark); ski.position.set(x,.11,z); ski.receiveShadow=true; g.add(ski);
-  const tip=new THREE.Mesh(new THREE.BoxGeometry(.8,.18,.9),M.dark); tip.position.set(x+1.95,.32,z); tip.rotation.z=.5; g.add(tip);
-}
-
-// módulo da espinha
-function module(id,o){
-  const g=new THREE.Group(); g.position.set(o.x,0,o.z||0);
-  const L=o.len,D=o.d,H=o.h,mat=o.mat||M.blue,trim=o.trim||M.blueTrim;
-  const body=rbox(L,D,H,.55,mat); body.position.y=FLOOR+H/2; g.add(body);
-  const roof=new THREE.Mesh(new THREE.BoxGeometry(L*.96,.25,D*.9),trim); roof.position.y=FLOOR+H+.05; g.add(roof);
-  const chassis=new THREE.Mesh(new THREE.BoxGeometry(L*.94,.4,D*.8),M.steel); chassis.position.y=FLOOR-.15; g.add(chassis);
-  for(const lx of [-L/2+1.6,L/2-1.6]) for(const lz of [-D/2+.9,D/2-.9]) leg(g,lx,lz,FLOOR-.3);
-  // janelas em faixa (frente e fundo)
-  const wm=winMat(o.win||0xffd9a3);
-  const rows=o.rows||1, n=Math.max(2,Math.floor(L/2.2));
-  for(let r=0;r<rows;r++) for(let i=0;i<n;i++){
-    const x=-L/2+L*(i+.5)/n, y=FLOOR+(rows===1?H*.58:H*(.32+r*.42));
-    for(const side of [1,-1]){const w=new THREE.Mesh(new THREE.PlaneGeometry(.75,.6),wm); w.position.set(x,y,side*(D/2+.02)); if(side<0) w.rotation.y=Math.PI; g.add(w);}
-  }
-  scene.add(g); tagPick(g,id);
-  sectorObj[id]={group:g,winMat:wm,anchor:new THREE.Vector3(o.x,FLOOR+H+2.6,o.z||0),foot:{x:o.x,z:o.z||0,rx:L/2+2,rz:D/2+2.5},len:L,x:o.x,z:o.z||0};
-  return sectorObj[id];
-}
-// ligação coberta entre módulos (ponte)
-const linkInfo=[];
-function bridge(x1,x2,z,opts){
-  opts=opts||{}; const L=x2-x1, y=FLOOR+1.5;
-  const b=rbox(L+.4,2.6,2.6,.5,M.link); b.position.set((x1+x2)/2,y,z); scene.add(b);
-  const strip=new THREE.Mesh(new THREE.PlaneGeometry(L*.7,.35),winMat(0xbfe0ff)); strip.position.set((x1+x2)/2,y+.4,z+1.32); scene.add(strip);
-  if(L>6){for(let x=x1+3;x<x2-1;x+=6){const p=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,FLOOR,8),M.steel); p.position.set(x,FLOOR/2-.2,z); scene.add(p);}}
-}
-function bridgeZ(z1,z2,x){
-  const L=z2-z1, y=FLOOR+1.5;
-  const b=rbox(L,2.6,2.6,.5,M.link,true); b.position.set(x,y,(z1+z2)/2); scene.add(b);
-  for(const side of [1,-1]){const strip=new THREE.Mesh(new THREE.PlaneGeometry(L*.85,.35),winMat(0xbfe0ff)); strip.position.set(x+side*1.32,y+.4,(z1+z2)/2); strip.rotation.y=side*Math.PI/2; scene.add(strip);}
-  for(let z=z1+3;z<z2-1;z+=5){const p=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,FLOOR+.3,8),M.steel); p.position.set(x,(FLOOR-.3)/2,z); p.castShadow=true; scene.add(p);
-    const sk=new THREE.Mesh(new THREE.BoxGeometry(.9,.2,2.2),M.dark); sk.position.set(x,.1,z); scene.add(sk);}
-  // bandeja de cabos sob a passarela
-  const tray=new THREE.Mesh(new THREE.BoxGeometry(.5,.2,L),M.hazard); tray.position.set(x-1.7,TRAY-.2,(z1+z2)/2); scene.add(tray);
-}
-function stairs(x,z,h,dir){
-  const g=new THREE.Group(); g.position.set(x,0,z);
-  const plat=new THREE.Mesh(new THREE.BoxGeometry(2.4,.15,1.8),M.steel); plat.position.set(0,h,0); g.add(plat);
-  const n=8; for(let i=0;i<n;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(1.4,.12,.5),M.steel); s.position.set(dir*(1.2+i*.48),h-(i+1)*(h/n),0); g.add(s);}
-  const rail=new THREE.Mesh(new THREE.BoxGeometry(4.4,.08,.08),M.steel); rail.position.set(dir*2.9,h*.55+.9,.7); rail.rotation.z=dir*Math.atan2(h,4.0); g.add(rail);
-  scene.add(g);
-}
-
-/* --- espinha (de oeste para leste) --- */
-module('comando',{x:-27,len:11,d:5.6,h:4.2,win:0xffdfae});
-bridge(-21.5,-18.5,0);
-module('iris',{x:-13,len:11,d:5.6,h:4.2,win:0xd9c8ff});
-bridge(-7.5,-4.5,0);
-module('alojamento',{x:3,len:15,d:9,h:7.6,rows:2,mat:M.red,trim:M.redTrim,win:0xffd39a});
-bridge(10.5,13.5,0);
-module('lab2',{x:19,len:11,d:5.6,h:4.2,win:0xc9e6ff});
-bridge(24.5,27.6,0);
-stairs(-24,3.8,FLOOR,1);
-stairs(-1,5.6,FLOOR,-1);
-stairs(21.5,3.8,FLOOR,1);
-
-// anel de ÍRIS na fachada
-const irisRingMat=new THREE.MeshBasicMaterial({color:0xb48cff});
-const irisRing=new THREE.Mesh(new THREE.TorusGeometry(.8,.1,12,40),irisRingMat);
-irisRing.position.set(-13,FLOOR+2.1,2.84); scene.add(irisRing);
-const irisLight=new THREE.PointLight(0xa47aff,1.2,10,2); irisLight.position.set(-13,FLOOR+2.1,4.5); scene.add(irisLight);
-
-// Estufa: cúpula sobre plataforma elevada, na ponta leste
-const estufa=(function(){
-  const id='estufa', x=34.6, R=6.6;
-  const g=new THREE.Group(); g.position.set(x,0,0);
-  const deck=new THREE.Mesh(new THREE.CylinderGeometry(R+.5,R+.5,.9,48),M.blueTrim); deck.position.y=FLOOR-.15; deck.castShadow=deck.receiveShadow=true; g.add(deck);
-  for(let i=0;i<6;i++){const a=i*Math.PI/3; leg(g,Math.cos(a)*(R-1.2),Math.sin(a)*(R-1.2),FLOOR-.6);}
-  const glassMat=new THREE.MeshStandardMaterial({color:0xff9a40,emissive:0xff7a20,emissiveIntensity:.75,transparent:true,opacity:.6,roughness:.2,metalness:0,side:THREE.DoubleSide,depthWrite:false});
-  const glass=new THREE.Mesh(new THREE.SphereGeometry(R,48,24,0,Math.PI*2,0,Math.PI/2),glassMat); glass.position.y=FLOOR+.3; g.add(glass);
-  const ico=new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(R*1.004,2),1);
-  const src=ico.attributes.position.array, keep=[];
-  for(let i=0;i<src.length;i+=6){ if(src[i+1]>-0.05 && src[i+4]>-0.05) keep.push(src[i],src[i+1],src[i+2],src[i+3],src[i+4],src[i+5]); }
-  const fg=new THREE.BufferGeometry(); fg.setAttribute('position',new THREE.Float32BufferAttribute(keep,3));
-  const frame=new THREE.LineSegments(fg,new THREE.LineBasicMaterial({color:0x26324f})); frame.position.y=FLOOR+.3; g.add(frame);
-  const plantMat=new THREE.MeshStandardMaterial({color:0x7fc46a,roughness:.8});
-  for(const zz of [-2.4,0,2.4]){ for(const lv of [0,1]){
-    const sh=new THREE.Mesh(new THREE.BoxGeometry(6.6,.12,1.1),M.steel); sh.position.set(0,FLOOR+.7+lv*1.15,zz); g.add(sh);
-    const pl=new THREE.Mesh(new THREE.BoxGeometry(6.2,.35,.8),plantMat); pl.position.set(0,FLOOR+.95+lv*1.15,zz); g.add(pl);}}
-  const lamp=new THREE.PointLight(0xffa04a,2.2,30,1.6); lamp.position.set(0,FLOOR+4,0); g.add(lamp);
-  const spill=new THREE.PointLight(0xff8a3a,1.6,26,2); spill.position.set(0,FLOOR+1,R+1.5); g.add(spill);
-  const hc=document.createElement('canvas'); hc.width=hc.height=128; const hx=hc.getContext('2d'); const hg=hx.createRadialGradient(64,64,0,64,64,64);
-  hg.addColorStop(0,'rgba(255,170,80,.9)'); hg.addColorStop(.35,'rgba(255,140,50,.35)'); hg.addColorStop(1,'rgba(255,120,40,0)'); hx.fillStyle=hg; hx.fillRect(0,0,128,128);
-  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(hc),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.8,fog:false}));
-  halo.scale.set(28,28,1); halo.position.y=FLOOR+3; g.add(halo);
-  scene.add(g); tagPick(g,id);
-  sectorObj[id]={group:g,anchor:new THREE.Vector3(x,FLOOR+R+3,0),foot:{x,z:0,rx:R+2,rz:R+2},len:2*R,x,z:0};
-  return {glassMat,plantMat,lamp,spill,halo};
-})();
-
-/* --- bloco técnico: Central de Energia (separado, atrás do núcleo) --- */
-const TECH={x:3,z:-31,len:18,d:10,h:7};
+/* ---------- Bloco técnico ---------- */
 (function(){
-  const g=new THREE.Group(); g.position.set(TECH.x,0,TECH.z);
-  const body=rbox(TECH.len,TECH.d,TECH.h,.4,M.tech); body.position.y=FLOOR+TECH.h/2; g.add(body);
-  const band=new THREE.Mesh(new THREE.BoxGeometry(TECH.len*.98,.5,TECH.d+.06),M.hazard); band.position.y=FLOOR+.5; g.add(band);
-  const chassis=new THREE.Mesh(new THREE.BoxGeometry(TECH.len*.95,.4,TECH.d*.85),M.steel); chassis.position.y=FLOOR-.15; g.add(chassis);
-  for(const lx of [-TECH.len/2+1.8,0,TECH.len/2-1.8]) for(const lz of [-TECH.d/2+1,TECH.d/2-1]) leg(g,lx,lz,FLOOR-.3);
-  // chaminés dos geradores
-  for(const sx of [-5,-2.5]){const st=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,3.2,12),M.steel); st.position.set(sx,FLOOR+TECH.h+1.5,-2); st.castShadow=true; g.add(st);}
-  // radiadores no teto
-  const rad=new THREE.Mesh(new THREE.BoxGeometry(6,1,4),M.dark); rad.position.set(4,FLOOR+TECH.h+.5,0); g.add(rad);
-  // portão de garagem (lado leste) e rampa
-  const gate=new THREE.Mesh(new THREE.PlaneGeometry(4.6,4.2),M.door); gate.position.set(TECH.len/2+.02,FLOOR+2.4,1.5); gate.rotation.y=Math.PI/2; g.add(gate);
-  const ramp=new THREE.Mesh(new THREE.BoxGeometry(7,.3,5),M.steel); ramp.position.set(TECH.len/2+3.2,FLOOR/2,1.5); ramp.rotation.z=-Math.atan2(FLOOR,7); g.add(ramp);
-  const wm=winMat(0xffe2b0);
-  for(let i=0;i<5;i++){const w=new THREE.Mesh(new THREE.PlaneGeometry(.8,.5),wm); w.position.set(-TECH.len/2+2+i*3.4,FLOOR+TECH.h*.72,TECH.d/2+.02); g.add(w);}
-  scene.add(g); tagPick(g,'energia');
-  sectorObj.energia={group:g,winMat:wm,anchor:new THREE.Vector3(TECH.x,FLOOR+TECH.h+4.8,TECH.z),foot:{x:TECH.x,z:TECH.z,rx:TECH.len/2+3,rz:TECH.d/2+3},len:TECH.len,x:TECH.x,z:TECH.z};
+  const g=new THREE.Group();g.position.set(-38,0,0);
+  g.add(box(16,7.4,10,M.tech,0,3.7,0));g.add(box(16.1,.5,10.1,M.hazard,0,.9,0));
+  g.add(plane(4.6,4.4,M.dark,-3.5,2.4,5.02));g.add(box(5.4,.3,.3,M.hazard,-3.5,4.75,5.08));// portão da garagem
+  g.add(box(6.5,.12,3,M.steel,-3.5,.06,6.6));
+  const wm=glow(0xffdcaa);for(let i=0;i<4;i++)g.add(plane(1,.6,wm,1+i*1.8,5.6,5.02));
+  g.add(plane(.9,1.8,glow(0xffd29a),5.5,1.5,5.02));
+  for(const sx of [-5.5,-3.8])g.add(cyl(.32,.32,3,M.steel,sx,8.9,-2));
+  g.add(box(5,1,3.5,M.dark,3.5,7.9,-1));g.add(box(2.2,1.3,2,M.gray,-1,8,2));
+  g.add(cyl(.05,.05,3.4,M.steel,6.2,9.1,3,4));
+  // tanque horizontal e tubos
+  const t=cyl(1.35,1.35,6.5,M.silver,9.5,1.9,6.2,20);t.rotation.z=Math.PI/2;g.add(t);
+  for(const x of [7.3,11.7])g.add(box(.4,1,2,M.steel,x,.5,6.2));
+  const p1=cyl(.16,.16,4,M.hazard,6.6,1.2,4.2,8);p1.rotation.z=Math.PI/2;g.add(p1);
+  // geradores auxiliares amarelos
+  g.add(box(3,2,2.2,M.yellow,-5.6,1,8.4));g.add(box(2.4,1.8,2,M.yellow,-2.6,.9,8.6));
+  scene.add(g);tag(g,'tecnico');
+  anchors.tecnico=new THREE.Vector3(-38,11.5,0);
 })();
-// passarela coberta núcleo -> bloco técnico
-bridgeZ(TECH.z+TECH.d/2-.2,-4.5+.2,TECH.x);
-// parque de tanques de combustível com dique
-(function(){
-  const g=new THREE.Group(); g.position.set(22,0,-33);
-  const bund=new THREE.Mesh(new THREE.BoxGeometry(12,.9,10),M.tech); bund.position.y=.45; bund.receiveShadow=true; g.add(bund);
-  const inner=new THREE.Mesh(new THREE.BoxGeometry(11,.2,9),M.dark); inner.position.y=.85; g.add(inner);
-  for(const z of [-3,0,3]){const t=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,9,20),M.link); t.rotation.z=Math.PI/2; t.position.set(0,2.2,z); t.castShadow=true; g.add(t);}
-  const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,9,8),M.hazard); pipe.rotation.z=Math.PI/2; pipe.position.set(-9.5,1.2,0); g.add(pipe);
-  scene.add(g); tagPick(g,'energia');
-})();
-// turbinas
 const rotors=[];
-function turbine(x,z,h){
-  const g=new THREE.Group(); g.position.set(x,0,z);
-  const tw=new THREE.Mesh(new THREE.CylinderGeometry(.25,.55,h,12),M.link); tw.position.y=h/2; tw.castShadow=true; g.add(tw);
-  const nac=new THREE.Mesh(new THREE.BoxGeometry(.8,.8,2),M.link); nac.position.set(0,h,0); g.add(nac);
-  const rot=new THREE.Group(); rot.position.set(0,h,1.1);
-  for(let i=0;i<3;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(.32,6.5,.08),M.link); b.position.y=3.2; const p=new THREE.Group(); p.rotation.z=i*Math.PI*2/3; p.add(b); rot.add(p);}
-  g.add(rot); rotors.push(rot); scene.add(g); tagPick(g,'energia');
+function turbine(x,z,h){const g=new THREE.Group();g.position.set(x,0,z);g.add(cyl(.22,.5,h,M.white,0,h/2,0,12));g.add(box(.7,.7,1.8,M.white,0,h,0));
+  const rot=new THREE.Group();rot.position.set(0,h,1);for(let i=0;i<3;i++){const p=new THREE.Group();p.rotation.z=i*Math.PI*2/3;p.add(box(.3,6.4,.08,M.white,0,3.2,0));rot.add(p);}
+  rot.add(new THREE.Mesh(new THREE.SphereGeometry(.18,8,8),glow(0xff5a4a)));g.add(rot);rotors.push(rot);scene.add(g);tag(g,'tecnico');}
+turbine(-47,-17,17);turbine(-32,-21,17);
+bridge(-30,0,-8.4,0);
+
+/* ---------- Laboratórios ---------- */
+(function(){
+  const g=new THREE.Group();g.position.set(4,0,-36);
+  g.add(box(20,4.6,6,M.white,0,FLOOR+2.3,0));g.add(box(20.1,1.1,6.1,M.blue,0,FLOOR+.55,0));g.add(box(20.2,.7,6.2,M.blue,0,FLOOR+4.6,0));
+  g.add(box(20,.3,6,M.steel,0,FLOOR-.1,0));legs(g,18,4.6,4,2);
+  const wm=glow(0xdcecff);for(let i=0;i<7;i++){g.add(plane(1.6,1,wm,-8+i*2.7,FLOOR+2.5,3.02));g.add(plane(1.6,1,wm,-8+i*2.7,FLOOR+2.5,-3.02,Math.PI));}
+  g.add(box(.2,4.4,6.05,M.blue,0,FLOOR+2.3,0));
+  for(const [x,z] of [[-6,0],[5,1]])g.add(box(1.4,.8,1.2,M.gray,x,FLOOR+5.3,z));
+  scene.add(g);tag(g,'labs');
+  stairs(13.6,-32.6,1);
+  // sonda de teste
+  const r=new THREE.Group();r.position.set(20,0,-35);
+  r.add(box(3,.4,3,M.steel,0,.2,0));for(const [x,z] of [[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5]])r.add(cyl(.09,.09,9,M.yellow,x,4.7,z,6));
+  for(let y=1.5;y<9;y+=1.6)r.add(box(1.1,.08,1.1,M.yellow,0,y,0));
+  r.add(box(2.2,1.6,1.8,M.orange,2.4,.8,.6));r.add(new THREE.Mesh(new THREE.SphereGeometry(.25,8,8),glow(0xfff1c4)));r.children[r.children.length-1].position.set(0,9.4,0);
+  const lamp=new THREE.PointLight(0xffd89a,1.1,18,1.8);lamp.position.set(0,9,0);r.add(lamp);
+  scene.add(r);tag(r,'labs');
+  anchors.labs=new THREE.Vector3(4,FLOOR+7.6,-36);
+})();
+bridge(1.5,-5.3,1.5,-33);
+
+/* ---------- Núcleo de ÍRIS ---------- */
+(function(){
+  const g=new THREE.Group();g.position.set(26,0,-5);
+  g.add(box(8,3.4,4.4,M.gray,0,FLOOR+1.7,0));g.add(box(8.2,.3,4.6,M.dark,0,FLOOR+3.5,0));g.add(box(8,.3,4.4,M.steel,0,FLOOR-.1,0));legs(g,7,3.2,3,2);
+  const cy=glow(0x5ff2ff);for(let i=0;i<4;i++){g.add(plane(1.1,.8,cy,-2.6+i*1.75,FLOOR+1.9,2.22));g.add(plane(1.1,.8,cy,-2.6+i*1.75,FLOOR+1.9,-2.22,Math.PI));}
+  g.add(box(1.2,.8,1.2,M.dark,2,FLOOR+4,0));
+  const l=new THREE.PointLight(0x5ff2ff,1,12,2);l.position.set(0,FLOOR+1.8,3.6);g.add(l);
+  scene.add(g);tag(g,'iris');
+  anchors.iris=new THREE.Vector3(26,FLOOR+6,-5);
+})();
+bridge(8.1,-3.2,22,-5);
+
+/* ---------- Comunicações ---------- */
+const towerLights=[];
+(function(){
+  const g=new THREE.Group();g.position.set(62,0,-14);
+  g.add(box(7,3.4,4.6,M.red,1,FLOOR+1.7,0));g.add(box(3,3.4,4.6,M.gray,-3.4,FLOOR+1.7,0));g.add(box(10.4,.3,4.9,M.dark,-.5,FLOOR+3.5,0));
+  g.add(box(10.4,.3,4.6,M.steel,-.5,FLOOR-.1,0));legs(g,9.4,3.4,3,2);
+  const wm=glow(0xffd29a);g.add(plane(2.6,1,wm,1.5,FLOOR+1.9,2.32));g.add(plane(.9,.8,wm,-3.4,FLOOR+1.9,2.32));
+  // parabólica
+  const ped=cyl(.25,.4,1.4,M.steel,-2.6,FLOOR+4.3,-.5);g.add(ped);
+  const dish=new THREE.Mesh(new THREE.SphereGeometry(1.8,24,12,0,Math.PI*2,0,1),M.white);dish.position.set(-2.6,FLOOR+5.6,-.5);dish.rotation.set(-.4,0,.7);dish.castShadow=true;g.add(dish);
+  // torre treliçada
+  const T=new THREE.Group();T.position.set(5,0,-3.5);const H=24;
+  for(const [x,z] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const lg=cyl(.08,.08,H,M.white,x*.75,H/2,z*.75,6);lg.rotation.z=-x*.03;lg.rotation.x=z*.03;T.add(lg);}
+  for(let y=2;y<H;y+=2.4){T.add(box(1.6,.06,.06,M.white,0,y,.75));T.add(box(1.6,.06,.06,M.white,0,y,-.75));T.add(box(.06,.06,1.6,M.white,.75,y,0));T.add(box(.06,.06,1.6,M.white,-.75,y,0));}
+  for(const y of [8,16,H]){const m=new THREE.Mesh(new THREE.SphereGeometry(.28,10,10),glow(0xff4a3a));m.position.set(0,y+.2,0);T.add(m);towerLights.push(m.material);}
+  for(const [y,ry] of [[18,.6],[13,2.4]]){const a=box(.5,1.6,.3,M.white,Math.cos(ry)*.9,y,Math.sin(ry)*.9);a.rotation.y=-ry;T.add(a);}
+  g.add(T);scene.add(g);tag(g,'comms');
+  stairs(68,-11.6,1);
+  anchors.comms=new THREE.Vector3(63,FLOOR+8,-14);
+})();
+bridge(30,-5.8,56.5,-13.2);
+
+/* ---------- Estufa Aurora ---------- */
+const EZ=20, ED=7, EH=4.2;
+(function(){
+  // antecâmara e serviço
+  const a=new THREE.Group();a.position.set(16,0,EZ);
+  a.add(box(4,3.6,4.8,M.gray,0,FLOOR+1.8,0));a.add(box(4.3,.3,5.1,M.dark,0,FLOOR+3.7,0));a.add(box(4,.3,4.8,M.steel,0,FLOOR-.1,0));legs(a,3.2,3.8,2,2);
+  a.add(plane(1.1,2.1,glow(0xffd29a),-.6,FLOOR+1.15,2.42));a.add(plane(.8,.6,glow(0xffd29a),1.1,FLOOR+2.2,2.42));
+  scene.add(a);tag(a,'antecamara');
+  stairs(14.6,EZ+3.4,-1);
+  anchors.antecamara=new THREE.Vector3(16,FLOOR+5.2,EZ+1);
+})();
+bridge(5.2,4.6,15.2,17.6);
+function chamber(id,x0,x1,light,seedling){
+  const w=x1-x0,cx=(x0+x1)/2,g=new THREE.Group();g.position.set(cx,0,EZ);
+  g.add(box(w,.35,ED,M.steel,0,FLOOR,0));
+  const frost=new THREE.MeshStandardMaterial({color:0xe6eef6,emissive:light,emissiveIntensity:.75,transparent:true,opacity:.4,roughness:.55,metalness:0,side:THREE.DoubleSide,depthWrite:false});
+  const walls=new THREE.Mesh(new THREE.BoxGeometry(w,EH,ED),frost);walls.position.y=FLOOR+.2+EH/2;g.add(walls);
+  const sh=new THREE.Shape();sh.moveTo(-ED/2,0);sh.lineTo(ED/2,0);sh.lineTo(0,1.4);sh.lineTo(-ED/2,0);
+  const rg=new THREE.ExtrudeGeometry(sh,{depth:w,bevelEnabled:false});rg.translate(0,0,-w/2);rg.rotateY(Math.PI/2);
+  const roof=new THREE.Mesh(rg,frost);roof.position.y=FLOOR+.2+EH;g.add(roof);
+  const lm=new THREE.LineBasicMaterial({color:0x2a3346});
+  const e1=new THREE.LineSegments(new THREE.EdgesGeometry(walls.geometry),lm);e1.position.copy(walls.position);g.add(e1);
+  const e2=new THREE.LineSegments(new THREE.EdgesGeometry(rg),lm);e2.position.copy(roof.position);g.add(e2);
+  for(let x=-w/2+1.5;x<w/2;x+=1.5){const v=box(.08,EH,.08,M.steel,x,FLOOR+.2+EH/2,ED/2);g.add(v);const v2=v.clone();v2.position.z=-ED/2;g.add(v2);}
+  // bancadas: duas de cada lado do corredor central, em dois níveis
+  const pm=std(seedling?0x9fe07a:0x5fbf5a,{roughness:.85,metalness:0,emissive:0x1d4a1a,emissiveIntensity:.5});
+  for(const z of [-2.5,-1.5,1.5,2.5])for(const lv of [0,1]){g.add(box(w-1.2,.1,.8,M.steel,0,FLOOR+.9+lv*1.3,z));g.add(box(w-1.5,seedling?.18:.42,.6,pm,0,FLOOR+1.1+lv*1.3,z));}
+  const strip=glow(light);for(const z of [-2,2])g.add(box(w-1,.06,.25,strip,0,FLOOR+EH-.1,z));
+  const pl=new THREE.PointLight(light,1.5,15,1.8);pl.position.set(0,FLOOR+3,0);g.add(pl);
+  // respiro no telhado
+  g.add(box(1.2,.7,1.2,M.dark,0,FLOOR+.2+EH+1.5,0));
+  g.add(box(w,.3,ED,M.steel,0,FLOOR-.1,0));legs(g,w-.6,ED-1,Math.max(2,Math.round(w/4)),2);
+  scene.add(g);tag(g,id);
+  anchors[id]=new THREE.Vector3(cx,FLOOR+EH+3.1,EZ);
 }
-turbine(36,-48,17); turbine(46,-40,15); turbine(26,-56,16);
+chamber('reserva',18,23.6,0xcfffe2,true);
+chamber('camara1',23.6,32.6,0xff6fd2,false);
+chamber('camara2',32.6,41.6,0xf1e4ff,false);
+// paredes vedadas entre os espaços (opacas)
+for(const x of [18,23.6,32.6,41.6]){const wall=box(.25,EH+.2,ED+.05,M.white,x,FLOOR+.1+EH/2,EZ);scene.add(wall);const id=x<19?'reserva':x<24?'camara1':x<33?'camara2':'camara2';tag(wall,id);}
+anchors.estufa=new THREE.Vector3(29.8,FLOOR+EH+4.4,EZ);
+placeMeshes.estufa=[].concat(placeMeshes.antecamara,placeMeshes.reserva,placeMeshes.camara1,placeMeshes.camara2);
 
-/* --- Comunicações: módulo isolado com torre --- */
-const COMMS={x:-46,z:-22};
-module('comms',{x:COMMS.x,z:COMMS.z,len:7,d:4.8,h:3.6,win:0xbfe0ff});
-const mastTop=new THREE.Vector3(COMMS.x-1,30,COMMS.z-7);
-(function(){
-  const g=new THREE.Group(); g.position.set(mastTop.x,0,mastTop.z);
-  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.24,.42,30,10),M.link); mast.position.y=15; mast.castShadow=true; g.add(mast);
-  for(const [h,s,ry] of [[19,1.6,.4],[23,1.1,-1.8],[15,1.3,2.4],[26.5,.85,1.0]]){
-    const dish=new THREE.Mesh(new THREE.SphereGeometry(s,20,10,0,Math.PI*2,0,.9),M.link);
-    dish.position.set(Math.cos(ry)*(s*.7),h,Math.sin(ry)*(s*.7)); dish.rotation.z=-Math.PI/2; dish.rotation.y=ry; g.add(dish);}
-  const tip=new THREE.Mesh(new THREE.SphereGeometry(.3,10,10),new THREE.MeshBasicMaterial({color:0xff5a4a})); tip.position.y=30.2; g.add(tip);
-  // cúpula de radar (radome)
-  const radome=new THREE.Mesh(new THREE.SphereGeometry(2,20,14),M.link); radome.position.set(7,2.2,2); radome.castShadow=true; g.add(radome);
-  const rb=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.4,1.2,12),M.steel); rb.position.set(7,.6,2); g.add(rb);
-  scene.add(g); tagPick(g,'comms'); sectorObj.comms.mastTip=tip;
-})();
-sectorObj.comms.anchor.set(COMMS.x,FLOOR+3.6+2.6,COMMS.z);
-// linha de cabos em postes + caminho com bandeiras (Comando -> Comunicações)
-const commsLine=[];
-(function(){
-  const a=new THREE.Vector3(-32.5,0,0), b=new THREE.Vector3(COMMS.x+3.5,0,COMMS.z);
-  const n=6, pts=[];
-  for(let i=0;i<=n;i++){const p=a.clone().lerp(b,i/n);
-    const post=new THREE.Mesh(new THREE.CylinderGeometry(.1,.12,3.2,6),M.steel); post.position.set(p.x,1.6,p.z+1.4); scene.add(post);
-    pts.push(new THREE.Vector3(p.x,3.1,p.z+1.4));
-    const fl=new THREE.Mesh(new THREE.PlaneGeometry(.5,.35),new THREE.MeshBasicMaterial({color:0xff6a4a,side:THREE.DoubleSide})); fl.position.set(p.x+.25,1.4,p.z-1.2); scene.add(fl);
-    const fp=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1.6,4),M.steel); fp.position.set(p.x,.8,p.z-1.2); scene.add(fp);}
-  // cabo com leve catenária
-  const cpts=[]; for(let i=0;i<pts.length-1;i++){for(let k=0;k<6;k++){const u=k/6; const q=pts[i].clone().lerp(pts[i+1],u); q.y-=Math.sin(u*Math.PI)*.35; cpts.push(q);}} cpts.push(pts[pts.length-1]);
-  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(cpts),new THREE.LineBasicMaterial({color:0x111827})));
-  commsLine.push(...cpts);
-})();
-// biruta (indica o vento)
-const windsock=(function(){
-  const g=new THREE.Group(); g.position.set(-36,0,10);
-  const p=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,6,6),M.steel); p.position.y=3; g.add(p);
-  const sock=new THREE.Mesh(new THREE.ConeGeometry(.5,2.4,12,1,true),M.orange); sock.rotation.x=Math.PI/2; sock.position.set(0,5.8,1.2); g.add(sock);
-  scene.add(g); return sock;
-})();
+/* veículos e trilhas */
+function snowcat(x,z,ry){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;
+  for(const s of [-1,1])g.add(box(4.2,1,1,M.dark,0,.5,s*1.15));g.add(box(4,.5,2.2,M.steel,0,1.2,0));
+  g.add(box(2.2,1.6,2.1,M.red,.6,2.25,0));g.add(box(1.5,1.1,2,M.red,-1.2,2,0));g.add(plane(1.8,.8,M.glassDark,1.72,2.5,0,Math.PI/2));
+  g.add(box(.3,.9,3.2,M.yellow,2.5,.6,0));g.add(box(.15,.15,1.6,glow(0xfff3c4),1.75,3.12,0));scene.add(g);}
+snowcat(-18,25,.5);
+(function(){const m=new THREE.MeshBasicMaterial({color:0x5a6c96,transparent:true,opacity:.35,depthWrite:false});
+  const path=[[-30,8],[-18,25],[-6,34],[12,40],[34,44]];
+  for(let i=0;i<path.length-1;i++){const [x1,z1]=path[i],[x2,z2]=path[i+1];const L=Math.hypot(x2-x1,z2-z1);
+    for(const off of [-1.15,1.15]){const t=new THREE.Mesh(new THREE.PlaneGeometry(L,.7),m);t.rotation.x=-Math.PI/2;t.rotation.z=-Math.atan2(z2-z1,x2-x1);
+      const nx=-(z2-z1)/L,nz=(x2-x1)/L;t.position.set((x1+x2)/2+nx*off,.06,(z1+z2)/2+nz*off);scene.add(t);}}})();
 
-/* Sentinela (fantasma) */
-const sentMats=[];
-(function(){
-  const g=new THREE.Group(); g.position.set(30,0,11);
-  const mk=(geo)=>{const e=new THREE.LineSegments(new THREE.EdgesGeometry(geo,15),new THREE.LineDashedMaterial({color:0xff7a6b,dashSize:.35,gapSize:.25,transparent:true,opacity:.7})); e.computeLineDistances(); sentMats.push(e.material); return e;};
-  const pole=mk(new THREE.CylinderGeometry(.25,.35,6,8)); pole.position.y=3; g.add(pole);
-  const head=mk(new THREE.CylinderGeometry(.8,.8,1.1,12)); head.position.y=6.6; g.add(head);
-  const base=mk(new THREE.CylinderGeometry(1.4,1.4,.3,16)); base.position.y=.15; g.add(base);
-  const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,7.4,8),new THREE.MeshBasicMaterial({visible:false})); hit.position.y=3.7; hit.userData.sector='sentinela'; pickables.push(hit); g.add(hit);
-  scene.add(g);
-  sectorObj.sentinela={group:g,anchor:new THREE.Vector3(30,9,11),foot:{x:30,z:11,rx:2.6,rz:2.6}};
-})();
+/* neve leve */
+const SN=1800,snowPos=new Float32Array(SN*3);for(let i=0;i<SN;i++){snowPos[i*3]=(Math.random()-.5)*220;snowPos[i*3+1]=Math.random()*34;snowPos[i*3+2]=(Math.random()-.5)*180;}
+const snowGeo=new THREE.BufferGeometry();snowGeo.setAttribute('position',new THREE.BufferAttribute(snowPos,3));
+const dotTex=(function(){const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d');const gr=x.createRadialGradient(16,16,0,16,16,16);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,32,32);return new THREE.CanvasTexture(c);})();
+scene.add(new THREE.Points(snowGeo,new THREE.PointsMaterial({size:.3,map:dotTex,transparent:true,opacity:.5,depthWrite:false,color:0xeaf2fb})));
 
-/* --- veículos --- */
-function snowcat(x,z,ry,color){
-  const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry||0;
-  for(const s of [-1,1]){const tr=new THREE.Mesh(new THREE.BoxGeometry(4.2,1,1),M.dark); tr.position.set(0,.5,s*1.15); tr.castShadow=true; g.add(tr);
-    for(const wx of [-1.5,-.5,.5,1.5]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,1.04,10),M.steel); w.rotation.x=Math.PI/2; w.position.set(wx,.5,s*1.15); g.add(w);}}
-  const chassis=new THREE.Mesh(new THREE.BoxGeometry(4,.5,2.2),M.steel); chassis.position.y=1.2; g.add(chassis);
-  const cab=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.6,2.1),color||M.red); cab.position.set(.6,2.25,0); cab.castShadow=true; g.add(cab);
-  const ws=new THREE.Mesh(new THREE.PlaneGeometry(1.8,.8),M.glassDark); ws.position.set(1.72,2.5,0); ws.rotation.y=Math.PI/2; g.add(ws);
-  for(const s of [-1,1]){const sw=new THREE.Mesh(new THREE.PlaneGeometry(1.6,.7),M.glassDark); sw.position.set(.6,2.55,s*1.06); if(s<0) sw.rotation.y=Math.PI; g.add(sw);}
-  const box=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.1,2),color||M.red); box.position.set(-1.2,2,0); g.add(box);
-  const lights=new THREE.Mesh(new THREE.BoxGeometry(.15,.15,1.6),winMat(0xfff3c4)); lights.position.set(1.75,3.12,0); g.add(lights);
-  const blade=new THREE.Mesh(new THREE.BoxGeometry(.3,.9,3.2),M.yellow); blade.position.set(2.5,.6,0); g.add(blade);
-  scene.add(g); return g;
-}
-function sledge(x,z,ry){
-  const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry||0;
-  for(const s of [-1,1]){const r=new THREE.Mesh(new THREE.BoxGeometry(5,.2,.25),M.steel); r.position.set(0,.1,s*.9); g.add(r);}
-  const deck=new THREE.Mesh(new THREE.BoxGeometry(4.8,.25,2.2),M.dark); deck.position.y=.45; g.add(deck);
-  const box=new THREE.Mesh(new THREE.BoxGeometry(3.6,2.1,2),M.orange); box.position.y=1.6; box.castShadow=true; g.add(box);
-  for(let i=-1.5;i<=1.5;i+=.5){const rib=new THREE.Mesh(new THREE.BoxGeometry(.06,2.1,2.04),M.redTrim); rib.position.set(i,1.6,0); g.add(rib);}
-  scene.add(g);
-}
-function skidoo(x,z,ry){
-  const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry||0;
-  const body=new THREE.Mesh(new THREE.BoxGeometry(1.8,.55,.75),M.yellow); body.position.set(.2,.55,0); body.castShadow=true; g.add(body);
-  const seat=new THREE.Mesh(new THREE.BoxGeometry(1,.25,.55),M.dark); seat.position.set(-.3,.95,0); g.add(seat);
-  const ws=new THREE.Mesh(new THREE.BoxGeometry(.08,.4,.6),M.glassDark); ws.position.set(.7,1.05,0); ws.rotation.z=-.4; g.add(ws);
-  const track=new THREE.Mesh(new THREE.BoxGeometry(1.3,.3,.5),M.dark); track.position.set(-.4,.2,0); g.add(track);
-  for(const s of [-1,1]){const ski=new THREE.Mesh(new THREE.BoxGeometry(1.3,.06,.14),M.steel); ski.position.set(.9,.05,s*.38); g.add(ski);}
-  scene.add(g);
-}
-snowcat(17,-22,-.3,M.red); sledge(10.6,-20.2,-.3); sledge(4.5,-18.4,-.3);
-snowcat(20,-13,.4,M.orange);
-skidoo(-3,10,.2); skidoo(-1,10.8,.1); skidoo(1,11.3,.25);
-snowcat(-56,-40,2.2,M.red);
-// marcas de esteira na neve
-(function(){
-  const m=new THREE.MeshBasicMaterial({color:0x4f6189,transparent:true,opacity:.35,depthWrite:false});
-  const path=[[30,-8],[22,-14],[14,-19],[2,-18],[-10,-14],[-30,-20],[-50,-38]];
-  for(let i=0;i<path.length-1;i++){const [x1,z1]=path[i],[x2,z2]=path[i+1]; const L=Math.hypot(x2-x1,z2-z1);
-    for(const off of [-1.15,1.15]){const t=new THREE.Mesh(new THREE.PlaneGeometry(L,.7),m); t.rotation.x=-Math.PI/2; t.rotation.z=-Math.atan2(z2-z1,x2-x1);
-      const nx=-(z2-z1)/L, nz=(x2-x1)/L; t.position.set((x1+x2)/2+nx*off,.06,(z1+z2)/2+nz*off); scene.add(t);}}
-})();
+/* anel de seleção */
+const ring=new THREE.Mesh(new THREE.RingGeometry(.9,1,72),new THREE.MeshBasicMaterial({color:0x2dd4bf,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,fog:false}));
+ring.rotation.x=-Math.PI/2;ring.position.y=.12;scene.add(ring);
+const FOOT={comando:[0,0,10,8],alojamento:[0,0,10,8],estufa:[28.5,EZ,15,6],antecamara:[16,EZ,3.5,4],reserva:[20.8,EZ,4,5],camara1:[28.1,EZ,6,5.5],camara2:[37.1,EZ,6,5.5],
+  iris:[26,-5,5.5,4],labs:[6,-36,13,5],tecnico:[-38,-2,11,10],comms:[63,-15,8,6]};
 
-/* Campo de perfuração */
-const drillLamp=new THREE.PointLight(0xffc27a,1.6,22,1.8);
-(function(){
-  const P=new THREE.Vector3(-62,0,-48);
-  const g=new THREE.Group(); g.position.copy(P);
-  for(let i=0;i<3;i++){const a=i*Math.PI*2/3; const lg=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,8,6),M.steel);
-    lg.position.set(Math.cos(a)*1.5,3.8,Math.sin(a)*1.5); lg.rotation.z=Math.cos(a)*.2; lg.rotation.x=-Math.sin(a)*.2; lg.castShadow=true; g.add(lg);}
-  const drill=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,5,10),M.tech); drill.position.y=3; g.add(drill);
-  const hut=new THREE.Mesh(new THREE.BoxGeometry(4,2.6,3),M.orange); hut.position.set(4.5,1.3,1); hut.castShadow=true; g.add(hut);
-  const hw=new THREE.Mesh(new THREE.PlaneGeometry(.9,.5),winMat(0xffd39a)); hw.position.set(4.5,1.7,2.52); g.add(hw);
-  drillLamp.position.set(0,8,0); g.add(drillLamp);
-  scene.add(g); tagPick(g,'perfuracao');
-  sectorObj.perfuracao={group:g,anchor:new THREE.Vector3(P.x,11,P.z),foot:{x:P.x+2,z:P.z,rx:7,rz:7}};
-  const flagM=new THREE.MeshBasicMaterial({color:0xff6a4a,side:THREE.DoubleSide});
-  for(let i=1;i<8;i++){const t=i/8; const x=-50+(P.x+50)*t, z=-26+(P.z+26)*t;
-    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1.8,4),M.steel); pole.position.set(x,.9,z); scene.add(pole);
-    const fl=new THREE.Mesh(new THREE.PlaneGeometry(.6,.4),flagM); fl.position.set(x+.3,1.6,z); scene.add(fl);}
-})();
-
-/* canal de terra (continente) */
-const farEnd=new THREE.Vector3(-150,80,-280);
-const beamGeo=new THREE.BufferGeometry().setFromPoints([mastTop.clone().add(new THREE.Vector3(0,.5,0)),farEnd]);
-const beamMat=new THREE.LineDashedMaterial({color:0x73e6c4,dashSize:2.2,gapSize:1.6,transparent:true,opacity:.35,fog:false});
-const beam=new THREE.Line(beamGeo,beamMat); beam.computeLineDistances(); scene.add(beam);
-const packet=new THREE.Mesh(new THREE.SphereGeometry(.7,12,12),new THREE.MeshBasicMaterial({color:0xa6ffe6,fog:false}));
-packet.visible=false; scene.add(packet);
-const packet2=packet.clone(); scene.add(packet2);
-sectorObj.continente={group:null,anchor:farEnd.clone().lerp(mastTop,0.08),foot:null};
-// pacote: antena -> cabo -> Comando -> espinha -> Alojamento
-const packetRoute=[mastTop.clone()].concat(commsLine.slice().reverse()).concat([new THREE.Vector3(-27,FLOOR+1.5,0),new THREE.Vector3(3,FLOOR+3,0)]);
-
-/* ============ FLUXO DE ENERGIA (cabos sob as ligações) ============ */
-const CX=TECH.x-1.7, CZ=5.1;
-const J=new THREE.Vector3(CX,TRAY,-4.5), J0=new THREE.Vector3(CX,TRAY,TECH.z+TECH.d/2), HUB=new THREE.Vector3(CX,TRAY,CZ);
-const energyPaths={
-  alojamento:[J0,J,HUB],
-  iris:[J0,J,HUB,new THREE.Vector3(-13,TRAY,CZ),new THREE.Vector3(-13,TRAY,2)],
-  comando:[J0,J,HUB,new THREE.Vector3(-27,TRAY,CZ),new THREE.Vector3(-27,TRAY,2)],
-  lab2:[J0,J,HUB,new THREE.Vector3(19,TRAY,CZ),new THREE.Vector3(19,TRAY,2)],
-  estufa:[J0,J,HUB,new THREE.Vector3(29.5,TRAY,CZ),new THREE.Vector3(34.6,TRAY,CZ*.6)],
-  comms:[J0,J,HUB,new THREE.Vector3(-32.5,TRAY,CZ),new THREE.Vector3(-32.5,3.1,1.4)].concat(commsLine.map(p=>p.clone()))
-};
-// cabo visível ao longo da espinha (bandeja)
-(function(){
-  const tray=new THREE.Mesh(new THREE.BoxGeometry(62.5,.2,.5),M.hazard); tray.position.set(-1.5,TRAY-.2,CZ); scene.add(tray);
-  for(let x=-31;x<=29;x+=5){const p=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,TRAY-.2,6),M.steel); p.position.set(x,(TRAY-.2)/2,CZ); scene.add(p);}
-})();
-function polyInfo(pts){const seg=[];let tot=0;for(let i=0;i<pts.length-1;i++){const l=pts[i].distanceTo(pts[i+1]);seg.push(l);tot+=l;}return {pts,seg,tot};}
-function along(info,u,out){let d=u*info.tot;for(let i=0;i<info.seg.length;i++){if(d<=info.seg[i]){return out.copy(info.pts[i]).lerp(info.pts[i+1],info.seg[i]?d/info.seg[i]:0);}d-=info.seg[i];}return out.copy(info.pts[info.pts.length-1]);}
-const flow=[]; // {id,info,offset,slot}
-for(const id in energyPaths){const info=polyInfo(energyPaths[id]); const n=Math.max(8,Math.round(info.tot/3));
-  for(let i=0;i<n;i++) flow.push({id,info,offset:i/n,slot:(i*7)%10});}
-const flowPos=new Float32Array(flow.length*3);
-const flowGeo=new THREE.BufferGeometry(); flowGeo.setAttribute('position',new THREE.BufferAttribute(flowPos,3));
-const flowDot=(function(){const c=document.createElement('canvas'); c.width=c.height=32; const x=c.getContext('2d'); const gr=x.createRadialGradient(16,16,0,16,16,16); gr.addColorStop(0,'rgba(255,220,150,1)'); gr.addColorStop(.4,'rgba(255,170,70,.8)'); gr.addColorStop(1,'rgba(255,140,40,0)'); x.fillStyle=gr; x.fillRect(0,0,32,32); return new THREE.CanvasTexture(c);})();
-const flowMat=new THREE.PointsMaterial({size:1.5,map:flowDot,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false});
-scene.add(new THREE.Points(flowGeo,flowMat));
-const share={alojamento:1,iris:1,comando:1,lab2:1,estufa:1,comms:1};
-const routeInfo=polyInfo(packetRoute);
-const tmpF=new THREE.Vector3();
-
-/* anéis de destaque no chão */
-const ringMat=new THREE.MeshBasicMaterial({color:0xff9a2e,transparent:true,opacity:.0,depthWrite:false,side:THREE.DoubleSide,fog:false});
-for(const id in sectorObj){const f=sectorObj[id].foot; if(!f) continue;
-  const r=new THREE.Mesh(new THREE.RingGeometry(.86,1,72),ringMat.clone()); r.rotation.x=-Math.PI/2; r.position.set(f.x,.12,f.z); r.scale.set(f.rx,f.rz,1);
-  scene.add(r); sectorObj[id].ring=r;}
-
-/* neve soprada (vento de trás para a frente, eixo Z) */
-const SNOW=3200;
-const snowPos=new Float32Array(SNOW*3), snowSpd=new Float32Array(SNOW);
-for(let i=0;i<SNOW;i++){snowPos[i*3]=(Math.random()-.5)*180; snowPos[i*3+1]=Math.random()*34; snowPos[i*3+2]=(Math.random()-.5)*140; snowSpd[i]=.6+Math.random()*.8;}
-const snowGeo=new THREE.BufferGeometry(); snowGeo.setAttribute('position',new THREE.BufferAttribute(snowPos,3));
-const dot=(function(){const c=document.createElement('canvas'); c.width=c.height=32; const x=c.getContext('2d'); const gr=x.createRadialGradient(16,16,0,16,16,16); gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=gr; x.fillRect(0,0,32,32); return new THREE.CanvasTexture(c);})();
-const snowMat=new THREE.PointsMaterial({size:.32,map:dot,transparent:true,opacity:.55,depthWrite:false,color:0xe8f0ff});
-scene.add(new THREE.Points(snowGeo,snowMat));
-
-/* ============ RÓTULOS HTML ============ */
-const labelsEl=document.getElementById('labels');
-const tags={};
-for(const id of ORDER_IN.concat(ORDER_OUT)){
-  const b=document.createElement('button'); b.type='button'; b.className='tag'; b.textContent=SECTORS[id].nome;
-  if(SECTORS[id].kind) b.dataset.kind=SECTORS[id].kind;
-  b.setAttribute('aria-label',SECTORS[id].nome+': abrir na prancheta');
-  b.addEventListener('click',()=>selectSector(id,true));
-  labelsEl.appendChild(b); tags[id]=b;
-}
+/* ================= INTERAÇÃO ================= */
+const labelsEl=document.getElementById('labels'), tags={};
+function mkTag(id,sub){const b=document.createElement('button');b.type='button';b.tabIndex=-1;b.className='tag'+(sub?' sub':'');b.textContent=P[id].nome;b.style.setProperty('--c',P[id].cor);
+  b.addEventListener('click',()=>select(id,true));labelsEl.appendChild(b);tags[id]=b;}
+ORDER.forEach(id=>mkTag(id,false));P.estufa.partes.forEach(id=>mkTag(id,true));
+let selected=null;
 const tmpV=new THREE.Vector3();
-let narrow=null;
 function placeLabels(){
-  const w=view.clientWidth,h=view.clientHeight;
-  const nw=w<600; if(nw!==narrow){narrow=nw; for(const id in tags) tags[id].textContent=nw?(SECTORS[id].curto||SECTORS[id].nome):SECTORS[id].nome;}
+  const w=view.clientWidth,h=view.clientHeight;const showSub=selected&&(selected==='estufa'||P[selected].pai==='estufa');
+  const list=showSub?ORDER.filter(id=>id!=='estufa').concat(P.estufa.partes):ORDER.slice();
+  Object.keys(tags).forEach(id=>{if(!list.includes(id))tags[id].style.visibility='hidden';});
   const placed=[];
-  const ids=Object.keys(tags).map(id=>{tmpV.copy(sectorObj[id].anchor).project(camera); return {id,x:tmpV.x,y:tmpV.y,z:tmpV.z};}).sort((a,b)=>a.z-b.z);
-  for(const o of ids){const el=tags[o.id];
-    const ew=el.offsetWidth, eh=el.offsetHeight;
-    let x=(o.x*.5+.5)*w-ew/2, y=(-o.y*.5+.5)*h-eh/2;
-    if(o.z>1||o.z<-1||x<-ew*.5||x>w-ew*.5||y<0||y>h-eh){el.style.visibility='hidden';continue;}
+  list.map(id=>{tmpV.copy(anchors[id]).project(camera);return{id,x:tmpV.x,y:tmpV.y,z:tmpV.z};}).sort((a,b)=>a.z-b.z).forEach(o=>{
+    const el=tags[o.id],ew=el.offsetWidth,eh=el.offsetHeight;let x=(o.x*.5+.5)*w-ew/2,y=(-o.y*.5+.5)*h-eh/2;
+    if(o.z>1||x<-ew*.5||x>w-ew*.5||y<62||y>h-eh){el.style.visibility='hidden';return;}
     x=Math.max(6,Math.min(w-6-ew,x));
-    for(let k=0;k<4;k++){const hit=placed.find(p=>x<p.x+p.w+4&&x+ew+4>p.x&&y<p.y+p.h+3&&y+eh+3>p.y); if(!hit) break; y=hit.y-eh-4;}
-    placed.push({x,y,w:ew,h:eh});
-    el.style.visibility='visible'; el.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';}
+    for(let k=0;k<4;k++){const hit=placed.find(p=>x<p.x+p.w+4&&x+ew+4>p.x&&y<p.y+p.h+3&&y+eh+3>p.y);if(!hit)break;y=hit.y-eh-4;}
+    placed.push({x,y,w:ew,h:eh});el.style.visibility='visible';el.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';});
 }
-
-/* ============ ESTADO ============ */
-const state={sector:null,phase:null,step:0,storm:0,stormTarget:0,estufa:1,estufaTarget:1,lab2:0,lab2Target:0};
-const panelBody=document.getElementById('panelBody');
-const chip=s=>s==='never'?'<span class="chip never">Silenciado na noite 9</span>':'';
-const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-
-function itemBtn(id){const s=SECTORS[id];
-  return '<li><button class="item" type="button" data-sector="'+id+'"><span><b>'+esc(s.nome)+'</b><small>'+esc(s.resumo.split('. ')[0].replace(/\.$/,''))+'.</small></span>'+chip(s.status)+'</button></li>';}
-
-function renderOverview(){
-  panelBody.innerHTML=
-   '<div class="eyebrow">Prancheta</div><h2>A estação, setor por setor</h2>'+
-   '<p class="warn">Material de design da disciplina. Contém a solução do mistério; não é para os alunos.</p>'+
-   '<p class="lead">Uma espinha de módulos sobre pernas hidráulicas com esquis, atravessada em relação ao vento, com um núcleo vermelho no meio. A energia vem de um bloco técnico separado; as comunicações ficam num módulo isolado. Clique num setor para ver quem está ali, o que ele guarda e qual pista esconde.</p>'+
-   '<ul class="howto"><li>Arrastar gira a estação; a rodinha (ou o gesto de pinça) aproxima.</li><li>Os botões Q1 a Q8 acendem os lugares de cada quinzena.</li><li>A linha do tempo mostra, na própria maquete, das noites comuns até a manhã do dia 10.</li></ul>'+
-   '<h3>Os sete setores</h3><ul class="list">'+ORDER_IN.map(itemBtn).join('')+'</ul>'+
-   '<h3>Fora dos setores</h3><ul class="list">'+ORDER_OUT.map(itemBtn).join('')+'</ul>'+
-   '<h3>Como os setores se ligam</h3><ul class="howto">'+
-   '<li><b>Pontes cobertas</b> entre os módulos da espinha: dá para ir de um setor a outro sem sair no gelo.</li>'+
-   '<li><b>Passarela coberta</b> do núcleo até a Central de Energia, com a bandeja de cabos por baixo. Os pontos laranja que correm nos cabos mostram a energia chegando a cada setor.</li>'+
-   '<li><b>Cabo em postes e caminho com bandeiras</b> até o módulo de Comunicações.</li>'+
-   '<li><b>Trilha de bandeiras</b> até o campo de perfuração, percorrida com veículos de esteira.</li>'+
-   '<li><b>Canal de terra</b>, pela antena, até o continente.</li></ul>'+
-   '<h3>De onde vem a planta</h3><p class="lead">A planta se inspira em duas estações reais: a Halley VI (Reino Unido), com módulos azuis sobre esquis e um núcleo social vermelho, e a Comandante Ferraz (Brasil), com bloco técnico e módulos isolados. A Estufa se inspira no EDEN ISS, estufa experimental da estação alemã Neumayer III.</p>';
-  bindPanel();
-}
-function renderSector(id){
-  const s=SECTORS[id];
-  panelBody.innerHTML=
-   '<button class="back" type="button" data-back>← Visão geral</button>'+
-   '<div class="legend">'+chip(s.status)+'</div><h2>'+esc(s.nome)+'</h2>'+
-   '<p class="lead">'+esc(s.resumo)+'</p>'+
-   '<dl class="facts"><div><dt>Quem</dt><dd>'+esc(s.quem)+'</dd></div>'+
-   '<div><dt>O que guarda</dt><dd>'+esc(s.guarda)+'</dd></div>'+
-   '<div><dt>Na noite do caso</dt><dd>'+esc(s.noite)+'</dd></div>'+
-   '<div class="clue"><dt>Pista</dt><dd>'+esc(s.pista)+'</dd></div></dl>'+
-   '<h3>Aparece nas quinzenas</h3><div class="qchips">'+s.fases.map(q=>'<button type="button" data-phase="'+q+'" aria-label="Quinzena Q'+q+': '+esc(PHASES[q].titulo)+'">Q'+q+'</button>').join('')+'</div>';
-  bindPanel();
-}
-function renderPhase(q){
-  const p=PHASES[q];
-  panelBody.innerHTML=
-   '<button class="back" type="button" data-back>← Visão geral</button>'+
-   '<div class="eyebrow">Quinzena Q'+q+'</div><h2>'+esc(p.titulo)+'</h2>'+
-   '<p class="question">'+esc(p.pergunta)+'</p>'+
-   '<dl class="facts"><div><dt>Missão</dt><dd>'+esc(p.peca)+'</dd></div>'+
-   '<div class="clue"><dt>Pista</dt><dd>'+esc(p.frag)+'</dd></div></dl>'+
-   '<h3>Lugares desta quinzena</h3><ul class="list">'+p.setores.map(itemBtn).join('')+'</ul>';
-  bindPanel();
-}
-function bindPanel(){
-  panelBody.querySelectorAll('[data-sector]').forEach(b=>b.addEventListener('click',()=>selectSector(b.dataset.sector,true)));
-  panelBody.querySelectorAll('[data-phase]').forEach(b=>b.addEventListener('click',()=>selectPhase(+b.dataset.phase)));
-  const back=panelBody.querySelector('[data-back]'); if(back) back.addEventListener('click',goHome);
-  document.getElementById('panel').scrollTop=0;
-}
-
-function refreshTags(){
-  const lit=state.phase?new Set(PHASES[state.phase].setores):null;
-  for(const id in tags){const el=tags[id];
-    el.classList.toggle('sel',state.sector===id);
-    el.classList.toggle('on',!!lit&&lit.has(id)&&state.sector!==id);
-    el.classList.toggle('dim',!!lit&&!lit.has(id)&&state.sector!==id);}
-  for(const id in sectorObj){const r=sectorObj[id].ring; if(!r) continue;
-    r.userData.on = (state.sector===id) || (!!lit&&lit.has(id));}
-  document.querySelectorAll('#phaseBtns button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.q===state.phase)));
-}
-
-function selectSector(id,fly){
-  state.sector=id; renderSector(id); refreshTags();
-  if(fly) flyTo(id);
-}
-function selectPhase(q){
-  if(state.phase===q){state.phase=null; refreshTags(); if(!state.sector) renderOverview(); return;}
-  state.phase=q; state.sector=null; renderPhase(q); refreshTags();
-  flyHome();
-}
-function goHome(){state.sector=null; state.phase=null; renderOverview(); refreshTags(); flyHome();}
+function setGlow(id,on,strength){(placeMeshes[id]||[]).forEach(m=>{const mt=m.material;if(!mt||!mt.isMeshStandardMaterial)return;
+  if(mt.userData.e0===undefined){mt.userData.e0=mt.emissive.getHex();mt.userData.i0=mt.emissiveIntensity;}
+  if(on){mt.emissive.setHex(0x2dd4bf);mt.emissiveIntensity=strength;}else{mt.emissive.setHex(mt.userData.e0);mt.emissiveIntensity=mt.userData.i0;}});}
+let hoverId=null;
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();
+function pick(ev){const r=canvas.getBoundingClientRect();mouse.set(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mouse,camera);
+  const hit=ray.intersectObjects(pickables,false)[0];return hit?hit.object.userData.place:null;}
+canvas.addEventListener('pointermove',ev=>{const id=pick(ev);if(id===hoverId)return;
+  if(hoverId&&hoverId!==selected)setGlow(hoverId,false);hoverId=id;if(id&&id!==selected)setGlow(id,true,.08);canvas.classList.toggle('hover',!!id);});
+let down=null;canvas.addEventListener('pointerdown',ev=>{down=[ev.clientX,ev.clientY];});
+canvas.addEventListener('pointerup',ev=>{if(!down)return;const d=Math.hypot(ev.clientX-down[0],ev.clientY-down[1]);down=null;if(d>5)return;
+  const id=pick(ev);if(!id)return;const inEstufa=selected&&(selected==='estufa'||P[selected].pai==='estufa');select(P[id].pai&&!inEstufa?'estufa':id,true);});
 
 /* câmera */
-let tween=null;
-function flyTo(id){
-  const o=sectorObj[id]; let target, pos;
-  if(id==='continente'){target=new THREE.Vector3(-46,16,-28); pos=new THREE.Vector3(10,32,40);}
-  else{const a=o.anchor; target=new THREE.Vector3(a.x,Math.max(3,a.y*.45),a.z); const d=id==='perfuracao'?40:Math.max(36,(o.len||10)*2+20);
-    pos=new THREE.Vector3(a.x-d*.2,a.y*.5+d*.42,a.z+d*.95);}
-  startTween(pos,target);
+let fly=null;
+function flyTo(pos,target){if(reduce){camera.position.copy(pos);controls.target.copy(target);return;}fly={p0:camera.position.clone(),t0:controls.target.clone(),p1:pos,t1:target,s:performance.now()};}
+function focus(id){const f=FOOT[id];const t=new THREE.Vector3(f[0],FLOOR+2,f[1]);const dist=Math.max(32,Math.max(f[2],f[3])*4.3);
+  const dir=new THREE.Vector3(-.42,.55,.72).normalize();flyTo(t.clone().add(dir.multiplyScalar(dist)),t);}
+
+/* ================= PAINEL ================= */
+const panel=document.getElementById('panel');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function placeBtn(id){const p=P[id];return '<li><button class="place" type="button" data-id="'+id+'" style="--c:'+p.cor+'"><span class="dot" aria-hidden="true"></span><span><b>'+esc(p.nome)+'</b><small>'+esc(p.resumo)+'</small></span></button>'+
+  (p.partes?'<ul class="sublist">'+p.partes.map(placeBtn).join('')+'</ul>':'')+'</li>';}
+function renderOverview(){
+  panel.style.removeProperty('--c');
+  panel.innerHTML='<div class="eyebrow">A estação por dentro</div><h2>Quem faz o quê, em cada lugar</h2>'+
+  '<p class="lead">A maquete mostra a estação numa noite comum de inverno, antes do incidente. Escolha um lugar para saber o que ele é, quem trabalha ali e o que se faz lá.</p>'+
+  '<ul class="places">'+ORDER.map(placeBtn).join('')+'</ul>'+
+  '<h3>Como se circula</h3><p class="lead">Todos os módulos são ligados por pontes cobertas: ninguém precisa sair no gelo para ir de um lugar a outro. As escadas externas são saídas de emergência. Quem vai ao gelo sai pelo bloco técnico, que fica no nível da neve.</p>'+
+  '<h3>Fora da maquete</h3>'+FORA.map(f=>'<p><b>'+esc(f.nome)+'.</b> <span class="lead">'+esc(f.txt)+'</span></p>').join('');
+  bind();
 }
-function flyHome(){startTween(HOME.pos.clone(),HOME.target.clone());}
-function startTween(pos,target){
-  if(reduceMotion){camera.position.copy(pos); controls.target.copy(target); controls.update(); return;}
-  tween={t:0,dur:1.1,p0:camera.position.clone(),t0:controls.target.clone(),p1:pos,t1:target};
+function renderPlace(id){
+  const p=P[id];panel.style.setProperty('--c',p.cor);
+  const people=p.quem.length?'<ul class="people">'+p.quem.map(k=>{const q=PEOPLE[k];return '<li class="person"><span class="avatar" aria-hidden="true">'+esc(q.i)+'</span><span><b>'+esc(q.n)+'</b><span>'+esc(q.r)+'</span></span></li>';}).join('')+'</ul>':'<p class="lead">Ninguém trabalha aqui o tempo todo.</p>';
+  panel.innerHTML='<button class="back" type="button" data-back>← Todos os lugares</button>'+
+   '<div class="eyebrow">'+esc(p.onde)+'</div><h2>'+esc(p.nome)+'</h2>'+
+   '<h3>O que é</h3>'+p.oque.map(t=>'<p>'+esc(t)+'</p>').join('')+
+   '<h3>Quem trabalha aqui</h3>'+people+
+   '<h3>O que se faz aqui</h3><ul class="does">'+p.faz.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>'+
+   (p.partes?'<h3>As partes da Estufa</h3><div class="chips">'+p.partes.map(k=>'<button class="partof" type="button" data-id="'+k+'">'+esc(P[k].nome)+'</button>').join('')+'</div>':'')+
+   (p.pai?'<button class="partof" type="button" data-id="'+p.pai+'">Faz parte da '+esc(P[p.pai].nome)+' →</button>':'')+
+   (p.nota?'<p class="note">'+p.nota+'</p>':'');
+  bind();panel.scrollTop=0;
 }
-const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-
-/* linha do tempo */
-const stepsEl=document.getElementById('steps');
-STEPS.forEach((s,i)=>{const li=document.createElement('li'); const b=document.createElement('button'); b.type='button'; b.textContent=s.curto; b.setAttribute('aria-label',s.hora); b.dataset.i=i;
-  b.addEventListener('click',()=>setStep(i,true)); li.appendChild(b); stepsEl.appendChild(li);});
-function setStep(i,fly){
-  const s=STEPS[i]; state.step=i;
-  state.stormTarget=s.storm; state.estufaTarget=s.estufaOn?1:0; state.lab2Target=s.lab2?1:0;
-  beamState.on=s.beam; beamState.t=0;
-  sentState.alert=s.sent;
-  stepsEl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===i)));
-  document.getElementById('stepNow').innerHTML='<strong>'+esc(s.hora)+'</strong><span>'+esc(s.texto)+'</span>';
-  document.getElementById('genBar').style.width=s.gen+'%';
-  document.getElementById('genTxt').textContent=s.gen+'%';
-  const et=document.getElementById('estufaTxt'); et.textContent=s.estufaOn?'ligada':'0% · sem energia'; et.className=s.estufaOn?'ok':'bad';
-  if(fly && s.focus){selectSector(s.focus,true);} else if(fly && i===0){goHome();}
+function bind(){panel.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.id,true)));
+  const bk=panel.querySelector('[data-back]');if(bk)bk.addEventListener('click',home);}
+function select(id,move){
+  if(selected)setGlow(selected,false);if(hoverId)setGlow(hoverId,false);
+  Object.values(tags).forEach(t=>t.classList.remove('on'));
+  selected=id;setGlow(id,true,.13);if(tags[id])tags[id].classList.add('on');
+  const f=FOOT[id];ring.position.x=f[0];ring.position.z=f[1];ring.scale.set(f[2],f[3],1);ring.material.opacity=.85;
+  renderPlace(id);if(move)focus(id);
+  const b=panel.querySelector('.back');if(b)b.focus({preventScroll:true});
 }
-const beamState={on:false,t:0};
-const sentState={alert:false};
+function home(){if(selected)setGlow(selected,false);Object.values(tags).forEach(t=>t.classList.remove('on'));selected=null;ring.material.opacity=0;renderOverview();flyTo(HOME.pos.clone(),HOME.target.clone());}
+document.getElementById('homeBtn').addEventListener('click',home);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!tv.hidden)closeText();else if(selected)home();}});
 
-/* fases */
-const pb=document.getElementById('phaseBtns');
-for(let q=1;q<=8;q++){const b=document.createElement('button'); b.type='button'; b.textContent='Q'+q; b.dataset.q=q; b.setAttribute('aria-pressed','false');
-  b.setAttribute('aria-label','Quinzena Q'+q+': '+PHASES[q].titulo); b.title=PHASES[q].titulo; b.addEventListener('click',()=>selectPhase(q)); pb.appendChild(b);}
-document.getElementById('reset').addEventListener('click',goHome);
-document.addEventListener('keydown',e=>{if(e.key==='Escape') goHome();});
+/* versão em texto */
+const tv=document.getElementById('textview'),tvBody=document.getElementById('tvBody');let lastFocus=null;
+function textOf(id,level){const p=P[id];const q=p.quem.length?p.quem.map(k=>PEOPLE[k].n+' ('+PEOPLE[k].r.toLowerCase()+')').join('; '):'Ninguém trabalha aqui o tempo todo.';
+  return '<h2 id="t-'+id+'">'+esc(p.nome)+'</h2><p class="lead">'+esc(p.onde)+'</p><h3>O que é</h3>'+p.oque.map(t=>'<p>'+esc(t)+'</p>').join('')+
+  '<h3>Quem trabalha aqui</h3><p>'+esc(q)+'</p><h3>O que se faz aqui</h3><ul>'+p.faz.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>'+(p.nota?'<p class="note">'+p.nota+'</p>':'');}
+function openText(){lastFocus=document.activeElement;
+  const all=[];ORDER.forEach(id=>{all.push(id);if(P[id].partes)all.push(...P[id].partes);});
+  tvBody.innerHTML='<button class="btn close" type="button" id="tvClose">Fechar texto</button><h1 id="tvTitle">Estação Aurora · a estação por dentro</h1>'+
+   '<p class="lead">Versão em texto da maquete, com o mesmo conteúdo. A estação aparece numa noite comum de inverno, antes do incidente.</p>'+
+   '<p>A planta, vista de frente: à esquerda, o bloco técnico no nível da neve, com duas turbinas eólicas atrás. No centro, o módulo vermelho de dois andares sobre pernas. À frente e à direita, a Estufa, com a antecâmara e três câmaras em fila. Atrás do módulo vermelho, o módulo azul e branco dos laboratórios, com a sonda de teste. À direita, o pequeno Núcleo de ÍRIS e, no fim de uma passarela longa, o módulo de Comunicações com a torre e a parabólica.</p>'+
+   all.map(id=>textOf(id)).join('')+
+   '<h2>Como se circula</h2><p>Todos os módulos são ligados por pontes cobertas: ninguém precisa sair no gelo para ir de um lugar a outro. As escadas externas são saídas de emergência. Quem vai ao gelo sai pelo bloco técnico.</p>'+
+   '<h2>Fora da maquete</h2>'+FORA.map(f=>'<p><b>'+esc(f.nome)+'.</b> '+esc(f.txt)+'</p>').join('');
+  tv.hidden=false;document.getElementById('tvClose').addEventListener('click',closeText);document.getElementById('tvClose').focus();}
+function closeText(){tv.hidden=true;if(lastFocus)lastFocus.focus();}
+document.getElementById('textBtn').addEventListener('click',openText);
 
-/* clique na maquete */
-const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(); let down=null;
-canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
-canvas.addEventListener('pointerup',e=>{
-  if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>5) return;
-  const r=canvas.getBoundingClientRect(); mouse.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
-  ray.setFromCamera(mouse,camera); const hit=ray.intersectObjects(pickables,false)[0];
-  if(hit&&hit.object.userData.sector) selectSector(hit.object.userData.sector,true);
-});
-canvas.addEventListener('pointermove',e=>{
-  if(e.buttons) return; const r=canvas.getBoundingClientRect(); mouse.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
-  ray.setFromCamera(mouse,camera); const hit=ray.intersectObjects(pickables,false)[0];
-  canvas.style.cursor=hit?'pointer':'grab';
-});
+/* tela cheia */
+document.getElementById('fsBtn').addEventListener('click',()=>{const d=document;
+  if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}
+  const el=d.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;
+  if(req){try{const r=req.call(el);if(r&&r.catch)r.catch(()=>window.open(location.href,'_blank'));}catch(e){window.open(location.href,'_blank');}}else window.open(location.href,'_blank');});
 
-/* redimensionar */
-function resize(){const w=view.clientWidth,h=view.clientHeight; const was=HOME; HOME = w<600?HOME_M:HOME_D; if(was!==HOME&&!state.sector){camera.position.copy(HOME.pos); controls.target.copy(HOME.target);} renderer.setSize(w,h,false); camera.aspect=w/h;
-  camera.fov = w<600?52:38; camera.updateProjectionMatrix();}
-window.addEventListener('resize',resize); resize();
-
-/* ============ LAÇO ============ */
+/* ================= LAÇO ================= */
+function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+window.addEventListener('resize',resize);
 const clock=new THREE.Clock();
-const warmGlass=new THREE.Color(0xff9a40), coldGlass=new THREE.Color(0x35507e), warmEm=new THREE.Color(0xff7a20), coldEm=new THREE.Color(0x0e1a33);
-const liveGreen=new THREE.Color(0x7fc46a), deadPlant=new THREE.Color(0x8c7a3c);
-const labWarm=new THREE.Color(0xc9e6ff), labHot=new THREE.Color(0xffffff);
-let t=0;
-function tick(){
-  const dt=Math.min(clock.getDelta(),.05); t+=reduceMotion?dt*.15:dt;
-  const k=reduceMotion?1:Math.min(1,dt*1.6);
-  state.storm+= (state.stormTarget-state.storm)*k;
-  state.estufa+=(state.estufaTarget-state.estufa)*k;
-  state.lab2+=(state.lab2Target-state.lab2)*k;
-
-  auroraMats.forEach(m=>{m.uniforms.t.value=t; m.uniforms.amp.value=1-state.storm*.75;});
-  scene.fog.density=FOG_CALM+(FOG_STORM-FOG_CALM)*state.storm;
-
-  // estufa
-  const e=state.estufa;
-  estufa.glassMat.color.copy(coldGlass).lerp(warmGlass,e);
-  estufa.glassMat.emissive.copy(coldEm).lerp(warmEm,e);
-  estufa.glassMat.emissiveIntensity=.15+.6*e;
-  estufa.plantMat.color.copy(deadPlant).lerp(liveGreen,e);
-  estufa.lamp.intensity=2.2*e; estufa.spill.intensity=1.6*e; estufa.halo.material.opacity=.8*e;
-  // lab 2 com prioridade elevada
-  sectorObj.lab2.winMat.color.copy(labWarm).lerp(labHot,state.lab2);
-  // ÍRIS pulsa
-  const pulse=.5+.5*Math.sin(t*2.2);
-  irisRingMat.color.setHSL(.73,.9,.62+.12*pulse);
-  irisLight.intensity=1+.8*pulse+state.lab2*.8;
-  // antena pisca
-  sectorObj.comms.mastTip.material.color.setHex(Math.sin(t*3)>.6?0xff5a4a:0x5a1f1a);
-  // turbinas (param na tempestade)
-  rotors.forEach((r,i)=>{r.rotation.z+=dt*(1.6+i*.2)*(1-state.storm)*(reduceMotion?0:1);});
-  // sentinela
-  sentMats.forEach(m=>{m.opacity=sentState.alert?(.35+.6*(Math.sin(t*6)>0?1:0)):.6;});
-  // canal de terra
-  beamMat.opacity=(beamState.on?.85:.28)+(state.phase===6||state.phase===7?.3:0);
-  if(beamState.on){beamState.t+=dt*.35; const u=beamState.t%2;
-    if(u<1){packet.visible=true; packet.position.copy(farEnd).lerp(mastTop,u); packet2.visible=false;}
-    else{packet.visible=false; packet2.visible=true; along(routeInfo,(u-1),packet2.position);}}
-  else{packet.visible=packet2.visible=false;}
-  // fluxo de energia
-  const st=STEPS[state.step];
-  for(const k in share){let v=st.gen/100; if(k==='lab2'&&st.lab2) v=1; if(k==='estufa'&&!st.estufaOn) v=0; share[k]+=(v-share[k])*Math.min(1,dt*3);}
-  const fp=flowGeo.attributes.position.array, spd=reduceMotion?0:7;
-  for(let i=0;i<flow.length;i++){const f=flow[i];
-    if(f.slot/10>=share[f.id]-.001){fp[i*3+1]=-50;continue;}
-    const u=(f.offset+t*spd/f.info.tot)%1; along(f.info,u,tmpF); fp[i*3]=tmpF.x; fp[i*3+1]=tmpF.y; fp[i*3+2]=tmpF.z;}
-  flowGeo.attributes.position.needsUpdate=true;
-  windsock.rotation.y=Math.sin(t*(1.5+state.storm*6))*(.08+.1*state.storm);
-  // anéis
-  for(const id in sectorObj){const r=sectorObj[id].ring; if(!r) continue; const tgt=r.userData.on?(.55+.3*Math.sin(t*3)):0; r.material.opacity+=(tgt-r.material.opacity)*Math.min(1,dt*6);}
-  // neve
-  const wind=(3+state.storm*22), fall=1.2+state.storm*1.5;
-  if(!reduceMotion){
-    const p=snowGeo.attributes.position.array;
-    for(let i=0;i<SNOW;i++){const s=snowSpd[i];
-      p[i*3+2]+=wind*s*dt; p[i*3+1]-=fall*s*dt; p[i*3]+=(Math.sin(t+i)*.3+wind*.25)*s*dt;
-      if(p[i*3+2]>70) p[i*3+2]=-70; if(p[i*3]>90) p[i*3]=-90; if(p[i*3+1]<0) p[i*3+1]=34;}
-    snowGeo.attributes.position.needsUpdate=true;}
-  snowMat.opacity=.45+.45*state.storm; snowMat.size=.32+.12*state.storm;
-
-  if(tween){tween.t+=dt/tween.dur; const u=ease(Math.min(1,tween.t));
-    camera.position.lerpVectors(tween.p0,tween.p1,u); controls.target.lerpVectors(tween.t0,tween.t1,u);
-    if(tween.t>=1) tween=null;}
-  controls.update();
-  renderer.render(scene,camera);
-  placeLabels();
-  requestAnimationFrame(tick);
+function loop(){
+  const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
+  if(fly){const u=Math.min(1,(performance.now()-fly.s)/950),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;camera.position.lerpVectors(fly.p0,fly.p1,e);controls.target.lerpVectors(fly.t0,fly.t1,e);if(u>=1)fly=null;}
+  if(!reduce){auroraMats.forEach(m=>m.uniforms.t.value=t);rotors.forEach((r,i)=>r.rotation.z-=dt*(1.1+i*.2));
+    const a=snowGeo.attributes.position.array;for(let i=0;i<SN;i++){a[i*3+1]-=dt*1.2;a[i*3]+=dt*1.6;if(a[i*3+1]<0){a[i*3+1]=34;a[i*3]=(Math.random()-.5)*170;}if(a[i*3]>85)a[i*3]-=170;}snowGeo.attributes.position.needsUpdate=true;
+    const on=Math.sin(t*3)>0;towerLights.forEach(m=>m.color.setHex(on?0xff4a3a:0x5a1a14));
+    if(selected)ring.material.opacity=.55+.3*Math.sin(t*3);}
+  controls.update();renderer.render(scene,camera);placeLabels();requestAnimationFrame(loop);
 }
-canvas.addEventListener('pointerdown',()=>{tween=null;});
-canvas.addEventListener('wheel',()=>{tween=null;},{passive:true});
-
-renderOverview(); setStep(0,false); refreshTags();
-requestAnimationFrame(tick);
-window.__aurora={selectSector,selectPhase,setStep,goHome};
-
-/* Tela cheia: abre a maquete grande e fecha com o mesmo botão (ou Esc). Se o navegador não permitir dentro do Genially, abre numa aba nova. */
-(function(){
-  const b=document.getElementById('fsBtn'); if(!b) return;
-  const d=document, el=d.documentElement;
-  const isFs=()=>!!(d.fullscreenElement||d.webkitFullscreenElement);
-  const upd=()=>{b.innerHTML=isFs()?'<span aria-hidden="true">✕</span> Fechar tela cheia':'<span aria-hidden="true">⤢</span> Tela cheia';};
-  const openTab=()=>window.open(location.href,'_blank','noopener');
-  b.addEventListener('click',()=>{
-    if(isFs()){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}
-    const req=el.requestFullscreen||el.webkitRequestFullscreen;
-    if(req&&(d.fullscreenEnabled||d.webkitFullscreenEnabled)){
-      try{const p=req.call(el); if(p&&p.catch) p.catch(openTab);}catch(e){openTab();}
-    } else openTab();
-  });
-  ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>d.addEventListener(ev,()=>{upd();setTimeout(()=>window.dispatchEvent(new Event('resize')),120);}));
-  upd();
-})();
-})();
+resize();renderOverview();loop();
 </script>
-</body></html>
+</body>
+</html>
